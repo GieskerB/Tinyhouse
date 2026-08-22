@@ -3,9 +3,15 @@
 
 #include <SDL3/SDL_pixels.h>
 
-constexpr float WIDTH = 800, HEIGHT = 800, BOARD_SIZE = HEIGHT;
+constexpr float BOARD_SIZE = 800;
+constexpr float POCKET_SIZE = BOARD_SIZE / 6 /*4*/;
+constexpr float WIDTH = BOARD_SIZE + POCKET_SIZE;
+constexpr float HEIGHT = BOARD_SIZE;
 
-const SDL_Color DARK_TILE{100, 50, 0, 255}, LIGHT_TILE{255, 225, 195, 255};
+constexpr SDL_Color DARK_TILE_COLOR{100, 50, 0, 255};
+constexpr SDL_Color LIGHT_TILE_COLOR{255, 225, 195, 255};
+constexpr SDL_Color POCKET_COLOR{220,210,200,255};
+constexpr SDL_Color LINE_COLOR{15,10,5,255};
 
 void init_window();
 

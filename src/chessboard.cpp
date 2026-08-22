@@ -7,11 +7,15 @@
 
 #include "../inc/piece.hpp"
 
+#define TEX_ID_MACRO_DIRECT(id, is_black) id + (is_black ? 0 : 5)
+#define TEX_ID_MACRO(piece) TEX_ID_MACRO_DIRECT(piece.id, piece.is_black)
+#define SET_COLOR_MACRO(color) SDL_SetRenderDrawColor(renderer, color.r, color.g, color.b, color.a);
+
 static SDL_Window* window = nullptr;
 static SDL_Renderer* renderer = nullptr;
 
-static const unsigned char TILE_COUNT = 4;
-static const float TILE_SIZE = BOARD_SIZE / TILE_COUNT;
+static constexpr unsigned char TILE_COUNT = 4;
+static constexpr float TILE_SIZE = BOARD_SIZE / TILE_COUNT;
 
 static std::array<SDL_Texture*, 10> textures{nullptr};
 
@@ -33,24 +37,24 @@ static inline void init_SDL() {
     }
 }
 
-static inline void create_texture(const char* path, unsigned char id) {
+static inline void create_texture(const char* path, unsigned char id, bool is_black) {
     SDL_Surface* surf = SDL_LoadPNG(path);
-    textures[id] = SDL_CreateTextureFromSurface(renderer, surf);
+    textures[TEX_ID_MACRO_DIRECT(id, is_black)] = SDL_CreateTextureFromSurface(renderer, surf);
     SDL_DestroySurface(surf);
 }
 
 static void load_pieces() {
-    create_texture("assets/White_Ferz.png", 0);
-    create_texture("assets/White_Hors.png", 1);
-    create_texture("assets/White_King.png", 2);
-    create_texture("assets/White_Pawn.png", 3);
-    create_texture("assets/White_Wazir.png", 4);
+    create_texture("assets/White_Ferz.png", FERZ_ID, false);
+    create_texture("assets/White_Hors.png", HORS_ID, false);
+    create_texture("assets/White_King.png", KING_ID, false);
+    create_texture("assets/White_Pawn.png", PAWN_ID, false);
+    create_texture("assets/White_Wazir.png", WAZIR_ID, false);
 
-    create_texture("assets/Black_Ferz.png", 5);
-    create_texture("assets/Black_Hors.png", 6);
-    create_texture("assets/Black_King.png", 7);
-    create_texture("assets/Black_Pawn.png", 8);
-    create_texture("assets/Black_Wazir.png", 9);
+    create_texture("assets/Black_Ferz.png", FERZ_ID, true);
+    create_texture("assets/Black_Hors.png", HORS_ID, true);
+    create_texture("assets/Black_King.png", KING_ID, true);
+    create_texture("assets/Black_Pawn.png", PAWN_ID, true);
+    create_texture("assets/Black_Wazir.png", WAZIR_ID, true);
 }
 
 void init_window() {
@@ -60,21 +64,53 @@ void init_window() {
 
 void draw_pieces() {
     for (const auto& p : pieces) {
-        SDL_FRect place{p.pos_x * TILE_SIZE, p.pos_y * TILE_SIZE, TILE_SIZE, TILE_SIZE};
-        SDL_RenderTexture(renderer, textures[p.id], NULL, &place);
+        const SDL_FRect place{p.pos_x * TILE_SIZE + POCKET_SIZE, p.pos_y * TILE_SIZE, TILE_SIZE, TILE_SIZE};
+        if (p.on_board) SDL_RenderTexture(renderer, textures[TEX_ID_MACRO(p)], NULL, &place);
+    }
+}
+
+void draw_pocket() {
+    // First half is white, second half is black
+    static constexpr float y_lookup[]{3 * TILE_SIZE / 2,
+                                      TILE_SIZE,
+                                      TILE_SIZE / 2,
+                                      0,
+                                      0,  // White KING_ID spacer
+                                      BOARD_SIZE / 2,
+                                      BOARD_SIZE / 2 + TILE_SIZE / 2,
+                                      BOARD_SIZE / 2 + TILE_SIZE,
+                                      BOARD_SIZE / 2 + 3 * TILE_SIZE / 2};
+    bool pocket_empty[10]{false};
+    SET_COLOR_MACRO(POCKET_COLOR);
+    const SDL_FRect pocket_rect {0,0, POCKET_SIZE, HEIGHT};
+    SDL_RenderFillRect(renderer, &pocket_rect);
+    SET_COLOR_MACRO(LINE_COLOR);
+    for(char i = -1; i <= 1; ++i) {
+        SDL_RenderLine(renderer, POCKET_SIZE+i, 0, POCKET_SIZE+i, HEIGHT);
+    }
+    for (const auto& p : pieces) {
+        if (p.id == KING_ID) continue;
+        const float x = pocket_empty[TEX_ID_MACRO(p)] ? POCKET_SIZE / 4 : 0;
+        const float y = y_lookup[TEX_ID_MACRO(p)];
+        const SDL_FRect place{x, y, TILE_SIZE / 2, TILE_SIZE / 2};
+        if (!p.on_board) {
+            SDL_RenderTexture(renderer, textures[TEX_ID_MACRO(p)], NULL, &place);
+            pocket_empty[TEX_ID_MACRO(p)] = true;
+        }
     }
 }
 
 void draw_board() {
     for (unsigned char x = 0; x < TILE_COUNT; ++x) {
         for (unsigned char y = 0; y < TILE_COUNT; ++y) {
-            const auto& c = (x + y) % 2 == 0 ? LIGHT_TILE : DARK_TILE;
-            SDL_SetRenderDrawColor(renderer, c.r, c.g, c.b, c.a);
-            const SDL_FRect tile{x * TILE_SIZE, y * TILE_SIZE, TILE_SIZE, TILE_SIZE};
+            const auto& color = (x + y) % 2 == 0 ? LIGHT_TILE_COLOR : DARK_TILE_COLOR;
+            SET_COLOR_MACRO(color);
+            const SDL_FRect tile{x * TILE_SIZE + POCKET_SIZE, y * TILE_SIZE, TILE_SIZE, TILE_SIZE};
             SDL_RenderFillRect(renderer, &tile);
         }
     }
     draw_pieces();
+    draw_pocket();
     SDL_RenderPresent(renderer);
 }
 
