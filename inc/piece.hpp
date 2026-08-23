@@ -1,29 +1,36 @@
 #ifndef PIECE_HPP
 #define PIECE_HPP
 
-static constexpr unsigned char PAWN_ID = 0, PAWN_VALUE = 1;
-static constexpr unsigned char FERZ_ID = 1, FERZ_VALUE = 1;
-static constexpr unsigned char HORS_ID = 2, HORS_VALUE = 2;
-static constexpr unsigned char WAZIR_ID = 3, WAZIR_VALUE = 1;
-static constexpr unsigned char KING_ID = 4, KING_VALUE = 255;
+typedef uint8_t piece;
 
-typedef struct {
-    const unsigned char id, value;
-    bool is_black, on_board;
-    unsigned char pos_x, pos_y;
+static constexpr uint8_t PAWN = 0b000, PAWN_VALUE = 1;
+static constexpr uint8_t FERZ = 0b001, FERZ_VALUE = 1;
+static constexpr uint8_t HORS = 0b010, HORS_VALUE = 2;
+static constexpr uint8_t WAZIR = 0b011, WAZIR_VALUE = 1;
+static constexpr uint8_t KING = 0b100, KING_VALUE = 255;
 
-} piece;
+static constexpr uint8_t WHITE = 0b1000, BLACK = 0b10000;
+static constexpr uint8_t ON_BOARD = 0b100000, IN_HOUSE = 0b1000000;
 
-const piece white_ferz{FERZ_ID, FERZ_VALUE, false, true, 3, 3};
-const piece white_hors{HORS_ID, HORS_VALUE, false, true, 2, 3};
-const piece white_wazir{WAZIR_ID, WAZIR_VALUE, false, true, 1, 3};
-const piece white_pawn{PAWN_ID, PAWN_VALUE, false, true, 0, 2};
-const piece white_king{KING_ID, KING_VALUE, false, true, 0, 3};
+static constexpr uint8_t ID_MASK = 0b111;
+static constexpr uint8_t PIECE_MASK = 0b1111;
 
-const piece black_ferz{FERZ_ID, FERZ_VALUE, true, true, 0, 0};
-const piece black_hors{HORS_ID, HORS_VALUE, true, true, 1, 0};
-const piece black_wazir{WAZIR_ID, WAZIR_VALUE, true, true, 2, 0};
-const piece black_pawn{PAWN_ID, PAWN_VALUE, true, true, 3, 1};
-const piece black_king{KING_ID, KING_VALUE, true, true, 3, 0};
+static inline uint8_t PIECE_INDEX(piece p) {
+    return (p & ID_MASK) | ((p & BLACK) >> 1);
+}
+
+piece null_piece = 0b0; 
+
+piece white_ferz = FERZ | WHITE | ON_BOARD;    
+piece white_hors = HORS | WHITE | ON_BOARD;    
+piece white_wazir = WAZIR | WHITE | ON_BOARD;  
+piece white_pawn = PAWN | WHITE | ON_BOARD;    
+piece white_king = KING | WHITE | ON_BOARD;    
+
+piece black_ferz = FERZ | BLACK | ON_BOARD;    
+piece black_hors = HORS | BLACK | ON_BOARD;    
+piece black_wazir = WAZIR | BLACK | ON_BOARD;  
+piece black_pawn = PAWN | BLACK | ON_BOARD;    
+piece black_king = KING | BLACK | ON_BOARD;    
 
 #endif

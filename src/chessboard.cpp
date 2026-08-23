@@ -7,20 +7,23 @@
 
 #include "../inc/piece.hpp"
 
-#define TEX_ID_MACRO_DIRECT(id, is_black) id + (is_black ? 0 : 5)
-#define TEX_ID_MACRO(piece) TEX_ID_MACRO_DIRECT(piece.id, piece.is_black)
-#define SET_COLOR_MACRO(color) SDL_SetRenderDrawColor(renderer, color.r, color.g, color.b, color.a);
-
 static SDL_Window* window = nullptr;
 static SDL_Renderer* renderer = nullptr;
 
-static constexpr unsigned char TILE_COUNT = 4;
-static constexpr float TILE_SIZE = BOARD_SIZE / TILE_COUNT;
+static inline bool SET_COLOR(const SDL_Color& color) {
+    return SDL_SetRenderDrawColor(renderer, color.r, color.g, color.b, color.a);
+}
 
-static std::array<SDL_Texture*, 10> textures{nullptr};
+static inline uint8_t ARRAY_INDEX(uint8_t file, uint8_t rank) { return rank * TILE_COUNT + file; }
 
-static std::array<piece, 10> pieces{white_ferz, white_hors, white_king, white_pawn, white_wazir,
-                                    black_ferz, black_hors, black_king, black_pawn, black_wazir};
+static std::array<SDL_Texture*, 13> textures{nullptr};  // index 5,6,7 stall nullptr!
+static std::array<piece, 10> house{null_piece};
+static std::array<piece, 16> board{
+    black_ferz, black_hors,  black_wazir, black_king,  // rank 4
+    null_piece, null_piece,  null_piece,  black_pawn,  // rank 3
+    white_pawn, null_piece,  null_piece,  null_piece,  // rank 2
+    white_king, white_wazir, white_hors,  white_ferz   // rank 1
+};
 
 static inline void init_SDL() {
     if (!SDL_Init(SDL_INIT_VIDEO)) {
@@ -37,24 +40,24 @@ static inline void init_SDL() {
     }
 }
 
-static inline void create_texture(const char* path, unsigned char id, bool is_black) {
+static inline void create_texture(const char* path, const piece p) {
     SDL_Surface* surf = SDL_LoadPNG(path);
-    textures[TEX_ID_MACRO_DIRECT(id, is_black)] = SDL_CreateTextureFromSurface(renderer, surf);
+    textures[PIECE_INDEX(p)] = SDL_CreateTextureFromSurface(renderer, surf);
     SDL_DestroySurface(surf);
 }
 
 static void load_pieces() {
-    create_texture("assets/White_Ferz.png", FERZ_ID, false);
-    create_texture("assets/White_Hors.png", HORS_ID, false);
-    create_texture("assets/White_King.png", KING_ID, false);
-    create_texture("assets/White_Pawn.png", PAWN_ID, false);
-    create_texture("assets/White_Wazir.png", WAZIR_ID, false);
+    create_texture("assets/White_Ferz.png", white_ferz);
+    create_texture("assets/White_Hors.png", white_hors);
+    create_texture("assets/White_King.png", white_king);
+    create_texture("assets/White_Pawn.png", white_pawn);
+    create_texture("assets/White_Wazir.png", white_wazir);
 
-    create_texture("assets/Black_Ferz.png", FERZ_ID, true);
-    create_texture("assets/Black_Hors.png", HORS_ID, true);
-    create_texture("assets/Black_King.png", KING_ID, true);
-    create_texture("assets/Black_Pawn.png", PAWN_ID, true);
-    create_texture("assets/Black_Wazir.png", WAZIR_ID, true);
+    create_texture("assets/Black_Ferz.png", black_ferz);
+    create_texture("assets/Black_Hors.png", black_hors);
+    create_texture("assets/Black_King.png", black_king);
+    create_texture("assets/Black_Pawn.png", black_pawn);
+    create_texture("assets/Black_Wazir.png", black_wazir);
 }
 
 void init_window() {
@@ -63,54 +66,95 @@ void init_window() {
 }
 
 void draw_pieces() {
-    for (const auto& p : pieces) {
-        const SDL_FRect place{p.pos_x * TILE_SIZE + POCKET_SIZE, p.pos_y * TILE_SIZE, TILE_SIZE, TILE_SIZE};
-        if (p.on_board) SDL_RenderTexture(renderer, textures[TEX_ID_MACRO(p)], NULL, &place);
+    for (uint8_t file = 0; file < TILE_COUNT; ++file) {
+        for (uint8_t rank = 0; rank < TILE_COUNT; ++rank) {
+            const piece p = board[ARRAY_INDEX(file, rank)];
+            const SDL_FRect place{file * TILE_SIZE + HOUSE_SIZE, rank * TILE_SIZE, TILE_SIZE, TILE_SIZE};
+            if ((p & ON_BOARD) != 0) SDL_RenderTexture(renderer, textures[PIECE_INDEX(p)], NULL, &place);
+        }
     }
 }
 
-void draw_pocket() {
-    // First half is white, second half is black
-    static constexpr float y_lookup[]{3 * TILE_SIZE / 2,
-                                      TILE_SIZE,
-                                      TILE_SIZE / 2,
-                                      0,
-                                      0,  // White KING_ID spacer
-                                      BOARD_SIZE / 2,
-                                      BOARD_SIZE / 2 + TILE_SIZE / 2,
-                                      BOARD_SIZE / 2 + TILE_SIZE,
-                                      BOARD_SIZE / 2 + 3 * TILE_SIZE / 2};
-    bool pocket_empty[10]{false};
-    SET_COLOR_MACRO(POCKET_COLOR);
-    const SDL_FRect pocket_rect {0,0, POCKET_SIZE, HEIGHT};
-    SDL_RenderFillRect(renderer, &pocket_rect);
-    SET_COLOR_MACRO(LINE_COLOR);
-    for(char i = -1; i <= 1; ++i) {
-        SDL_RenderLine(renderer, POCKET_SIZE+i, 0, POCKET_SIZE+i, HEIGHT);
+void push_house(uint8_t file, uint8_t rank) {
+    piece p = board[ARRAY_INDEX(file, rank)];
+    board[ARRAY_INDEX(file, rank)] = null_piece;  // clear peace form board
+    if (p == null_piece) return;
+    p ^= ON_BOARD | IN_HOUSE;  // Move from board to house
+    p ^= WHITE | BLACK;        // Switch color
+    const uint8_t p_id = p & ID_MASK;
+    // Move piece to 2nd rank if not alone
+    if (house[p_id] == null_piece)
+        house[p_id] = p;
+    else
+        house[p_id + 5] = p;
+}
+
+void pop_house(uint8_t house_index, uint8_t file, uint8_t rank) {
+    piece p = house[house_index];
+    house[house_index] = null_piece;  // clear peace form house
+    if (p == null_piece) return;
+    p ^= ON_BOARD | IN_HOUSE;  // Move from house to board
+    const uint8_t p_id = p & ID_MASK;
+    if (house[p_id + 5] != null_piece) {
+        // Shift piece in house if two existed
+        house[p_id] = house[p_id + 5];
+        house[p_id + 5] = null_piece;
     }
-    for (const auto& p : pieces) {
-        if (p.id == KING_ID) continue;
-        const float x = pocket_empty[TEX_ID_MACRO(p)] ? POCKET_SIZE / 4 : 0;
-        const float y = y_lookup[TEX_ID_MACRO(p)];
+    board[ARRAY_INDEX(file, rank)] = p;  // place peace on board
+}
+
+void draw_house() {
+    // First half is white, second half is black
+    static constexpr std::array<float, 13> y_lookup{
+        BOARD_SIZE / 2,                      // white pawn
+        BOARD_SIZE / 2 + 3 * TILE_SIZE / 2,  // white ferz
+        BOARD_SIZE / 2 + TILE_SIZE,          // white hors
+        BOARD_SIZE / 2 + TILE_SIZE / 2,      // white wazir
+        -1                                   // white king
+        -2,                                  // spacer
+        -2,                                  // spacer
+        -2,                                  // spacer
+        3 * TILE_SIZE / 2,                   // black pawn
+        0,                                   // black ferz
+        TILE_SIZE / 2,                       // black Hors
+        TILE_SIZE,                           // black wazir
+        -1,                                  // black king
+    };
+    SET_COLOR(HOUSE_COLOR);
+    const SDL_FRect house_rect{0, 0, HOUSE_SIZE, HEIGHT};
+    SDL_RenderFillRect(renderer, &house_rect);
+    SET_COLOR(LINE_COLOR);
+    for (char i = -1; i <= 1; ++i) {
+        SDL_RenderLine(renderer, HOUSE_SIZE + i, 0, HOUSE_SIZE + i, HEIGHT);
+    }
+    for (uint8_t index = 0; index < house.size(); ++index) {
+        const piece p = house[index];
+        const float x = index < 5 ? 0 : HOUSE_SIZE / 4;
+        const float y = y_lookup[PIECE_INDEX(p)];
         const SDL_FRect place{x, y, TILE_SIZE / 2, TILE_SIZE / 2};
-        if (!p.on_board) {
-            SDL_RenderTexture(renderer, textures[TEX_ID_MACRO(p)], NULL, &place);
-            pocket_empty[TEX_ID_MACRO(p)] = true;
+        if ((p & IN_HOUSE) != 0) {
+            SDL_RenderTexture(renderer, textures[PIECE_INDEX(p)], NULL, &place);
         }
     }
 }
 
 void draw_board() {
-    for (unsigned char x = 0; x < TILE_COUNT; ++x) {
-        for (unsigned char y = 0; y < TILE_COUNT; ++y) {
-            const auto& color = (x + y) % 2 == 0 ? LIGHT_TILE_COLOR : DARK_TILE_COLOR;
-            SET_COLOR_MACRO(color);
-            const SDL_FRect tile{x * TILE_SIZE + POCKET_SIZE, y * TILE_SIZE, TILE_SIZE, TILE_SIZE};
+    for (unsigned char file = 0; file < TILE_COUNT; ++file) {
+        for (unsigned char rank = 0; rank < TILE_COUNT; ++rank) {
+            const auto& color = (file + rank) % 2 == 0 ? LIGHT_TILE_COLOR : DARK_TILE_COLOR;
+            SET_COLOR(color);
+            const SDL_FRect tile{file * TILE_SIZE + HOUSE_SIZE, rank * TILE_SIZE, TILE_SIZE, TILE_SIZE};
             SDL_RenderFillRect(renderer, &tile);
         }
     }
+
+    // push_house(0,0);
+    // push_house(2,3);
+
+    // pop_house(2, 0,0);
+    
     draw_pieces();
-    draw_pocket();
+    draw_house();
     SDL_RenderPresent(renderer);
 }
 
