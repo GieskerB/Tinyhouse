@@ -4,6 +4,8 @@
 #include <array>
 #include <cassert>
 
+class House;
+
 #include "piece.hpp"
 
 class House {
@@ -21,7 +23,7 @@ class House {
 
     void select(uint8_t);
     void unselect();
-    
+
     bool is_highlighted(uint8_t index) const;
 
     static uint8_t get_index(piece);

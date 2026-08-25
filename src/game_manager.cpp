@@ -32,6 +32,15 @@ void GameManager::loop() {
                     const int8_t rank = static_cast<int8_t>(mouse_y / HEIGHT * Board::TILE_COUNT);
                     board.select_piece(Board::get_index(file, rank));
                     house.unselect();
+
+                    // for (const auto & var: ATTACKS(board, Board::get_index(file, rank))) {
+                    //     std::cout << +var << "  ";
+                    // }
+                    // std::cout << "  -+-  ";
+                    //                     for (const auto & var: MOVES(board, Board::get_index(file, rank))) {
+                    //     std::cout << +var << "  ";
+                    // }
+                    // std::cout << "\n";
                 }
             }
         }

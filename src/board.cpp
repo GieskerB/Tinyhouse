@@ -30,3 +30,13 @@ uint8_t Board::get_index(uint8_t file, uint8_t rank) {
     assert(file < TILE_COUNT);
     return rank * TILE_COUNT + file;
 }
+
+uint8_t Board::get_file(uint8_t index) {
+    assert(index < TILE_COUNT * TILE_COUNT);
+    return index % TILE_COUNT;
+}
+
+uint8_t Board::get_rank(uint8_t index) {
+    assert(index < TILE_COUNT * TILE_COUNT);
+    return index / TILE_COUNT;
+}

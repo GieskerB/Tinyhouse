@@ -6,6 +6,8 @@
 #include <array>
 #include <cassert>
 
+class Board;
+
 #include "piece.hpp"
 #include "move.hpp"
 
@@ -28,10 +30,12 @@ class Board {
 
     void select_piece(uint8_t index);
     void unselect_piece();
-    
+
     void make_move(move move);
 
     static uint8_t get_index(uint8_t file, uint8_t rank);
+    static uint8_t get_file(uint8_t index);
+    static uint8_t get_rank(uint8_t index);
 };
 
 #endif

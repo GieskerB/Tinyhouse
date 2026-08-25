@@ -16,9 +16,11 @@ constexpr uint8_t KING = 0b100;
 // piece color
 constexpr uint8_t WHITE = 0b1000, BLACK = 0b10000;
 
+constexpr uint8_t TYPE_MASKE=0b00111, COLOR_MASK=0b11000;
+
 inline uint8_t PIECE_INDEX(piece p) {
-    const uint8_t piece_index = (p & 0b00111);
-    const uint8_t color_index = (p & 0b11000);
+    const uint8_t piece_index = (p & TYPE_MASKE);
+    const uint8_t color_index = (p & COLOR_MASK);
     const uint8_t index = piece_index | ((color_index & BLACK) >> 1);
     return index > 4 ? index - 3 : index;  // Close the gape of (5,6,7) without texture
 }
