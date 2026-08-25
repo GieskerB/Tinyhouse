@@ -19,6 +19,7 @@ constexpr SDL_Color LIGHT_TILE_COLOR{255, 225, 195, 255};
 constexpr SDL_Color DARK_TILE_SELECTED_COLOR{0, 50, 100, 255};
 constexpr SDL_Color LIGHT_TILE_SELECTED_COLOR{195, 225, 255, 255};
 constexpr SDL_Color HOUSE_COLOR{220, 210, 200, 255};
+constexpr SDL_Color HOUSE_SELECTED_COLOR{200, 210, 220, 255};
 constexpr SDL_Color LINE_COLOR{15, 10, 5, 255};
 
 static std::array<SDL_Texture*, 10> textures{nullptr};
@@ -67,11 +68,10 @@ void render_board(const Board& board) {
     // Render Board background
     for (unsigned char file = 0; file < Board::TILE_COUNT; ++file) {
         for (unsigned char rank = 0; rank < Board::TILE_COUNT; ++rank) {
-            // const auto& selected_color = (file + rank) % 2 == 0 ? LIGHT_TILE_SELECTED_COLOR :
-            // DARK_TILE_SELECTED_COLOR;
+            const auto& selected_color = (file + rank) % 2 == 0 ? LIGHT_TILE_SELECTED_COLOR : DARK_TILE_SELECTED_COLOR;
             const auto& color = (file + rank) % 2 == 0 ? LIGHT_TILE_COLOR : DARK_TILE_COLOR;
-            SET_COLOR(color);
-            // SET_COLOR(file == selected_file and rank == selected_rank ? selected_color : color);
+            // SET_COLOR(color);
+            SET_COLOR(board.is_highlighted(Board::get_index(file,rank)) ? selected_color : color);
             const SDL_FRect tile{file * TILE_SIZE + HOUSE_SIZE, rank * TILE_SIZE, TILE_SIZE, TILE_SIZE};
             SDL_RenderFillRect(renderer, &tile);
         }
@@ -81,7 +81,6 @@ void render_board(const Board& board) {
     for (uint8_t file = 0; file < Board::TILE_COUNT; ++file) {
         for (uint8_t rank = 0; rank < Board::TILE_COUNT; ++rank) {
             const piece p = board.get_piece(Board::get_index(file, rank));
-            std::cout << +file << "+" << +rank << " = " << +p << "\n";
             if (p == const_piece::null_piece) continue;
             const SDL_FRect place{file * TILE_SIZE + HOUSE_SIZE, rank * TILE_SIZE, TILE_SIZE, TILE_SIZE};
             SDL_RenderTexture(renderer, textures[PIECE_INDEX(p)], NULL, &place);
@@ -108,12 +107,6 @@ void render_house(const House& house) {
     const SDL_FRect house_rect{0, 0, HOUSE_SIZE, HEIGHT};
     SDL_RenderFillRect(renderer, &house_rect);
 
-    // Boundary line
-    SET_COLOR(LINE_COLOR);
-    for (char i = -1; i <= 1; ++i) {
-        SDL_RenderLine(renderer, HOUSE_SIZE + i, 0, HOUSE_SIZE + i, HEIGHT);
-    }
-
     // Helper lambda
     auto render = [](float x, float y, piece p) {
         const SDL_FRect place{x, y, TILE_SIZE / 2, TILE_SIZE / 2};
@@ -122,12 +115,23 @@ void render_house(const House& house) {
 
     // Render either 0 / 1 / 2 pieces in house
     for (uint8_t index = 0; index < House::HOUSE_SIZE; ++index) {
+        if (house.is_highlighted(index)) {
+            SET_COLOR(HOUSE_SELECTED_COLOR);
+            const SDL_FRect select_rect{0, TILE_SIZE / 2 * index, HOUSE_SIZE, TILE_SIZE / 2};
+            SDL_RenderFillRect(renderer, &select_rect);
+        }
+
         const uint8_t count = house.count(index);
         if (count == 0) continue;
         const float y = y_lookup[index];
         const piece p = House::index_to_piece(index);
         render(0, y, p);
         if (count == 2) render(HOUSE_SIZE / 4, y, p);
+    }
+    // Boundary line
+    SET_COLOR(LINE_COLOR);
+    for (char i = -1; i <= 1; ++i) {
+        SDL_RenderLine(renderer, HOUSE_SIZE + i, 0, HOUSE_SIZE + i, HEIGHT);
     }
 
     SDL_RenderPresent(renderer);

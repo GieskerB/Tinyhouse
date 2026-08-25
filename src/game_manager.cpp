@@ -24,11 +24,14 @@ void GameManager::loop() {
                 const float mouse_x = event.button.x;
                 const float mouse_y = event.button.y;
                 if (mouse_x < HOUSE_SIZE) {
-                    std::cout << "House index: " << static_cast<int>(mouse_y / HEIGHT * 8) << "\n";
+                    const int8_t house_index = static_cast<int>(mouse_y / HEIGHT * House::HOUSE_SIZE);
+                    house.select(house_index);
+                    board.unselect_piece();
                 } else {
-                    // const int8_t file = static_cast<int8_t>((mouse_x - HOUSE_SIZE) / WIDTH * TILE_COUNT);
-                    // const int8_t rank = static_cast<int8_t>(mouse_y / HEIGHT * TILE_COUNT);
-                    // click_board(file, rank);
+                    const int8_t file = static_cast<int8_t>((mouse_x - HOUSE_SIZE) / BOARD_SIZE * Board::TILE_COUNT);
+                    const int8_t rank = static_cast<int8_t>(mouse_y / HEIGHT * Board::TILE_COUNT);
+                    board.select_piece(Board::get_index(file, rank));
+                    house.unselect();
                 }
             }
         }
