@@ -4,6 +4,18 @@
 
 inline static move create_move(uint8_t from, uint8_t to, uint16_t flags) { return from | (to << 4) | flags; }
 
+#include <iostream>
+
+static void clear_own_captures(const Board& board, uint8_t piece_index, std::vector<int8_t>& offsets) {
+    const piece p = board.get_piece(piece_index);
+    const uint8_t  team_color = p & COLOR_MASK;
+    for (int8_t i = offsets.size() -1; i >= 0; --i) {
+        if ((board.get_piece(piece_index + offsets[i]) & COLOR_MASK) == team_color ) {
+            offsets.erase(std::next(offsets.begin(), i));
+        }
+    }
+}
+
 static std::vector<int8_t> pawn_attack(bool is_black, uint8_t index) {
     std::vector<int8_t> attack_offset{};
 
@@ -110,20 +122,28 @@ std::vector<int8_t> ATTACKS(const Board& board, uint8_t piece_index) {
     const piece p = board.get_piece(piece_index);
     if (p == const_piece::null_piece) return {};
     const bool is_black = p & BLACK;
+    std::vector<int8_t> attacks;
     switch (p & TYPE_MASKE) {
         case PAWN:
-            return pawn_attack(is_black, piece_index);
+            attacks= pawn_attack(is_black, piece_index);
+            break;
         case FERZ:
-            return ferz_attack(piece_index);
+            attacks= ferz_attack(piece_index);
+            break;
         case HORS:
-            return hors_attack(board, piece_index);
+            attacks= hors_attack(board, piece_index);
+            break;
         case WAZIR:
-            return wazir_attack(piece_index);
+            attacks= wazir_attack(piece_index);
+            break;
         case KING:
-            return king_attack(piece_index);
+            attacks= king_attack(piece_index);
+            break;
         default:
             return {};
     }
+    clear_own_captures(board,piece_index,attacks);
+    return attacks;
 }
 
 static std::vector<int8_t> pawn_move(bool is_black) {
