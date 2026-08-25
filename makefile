@@ -15,7 +15,10 @@ BUILD_DIR := build
 PROGS := tinyhouse
 
 # Sources
-tinyhouse_SRCS := $(SRC_DIR)/main.cpp $(SRC_DIR)/chessboard.cpp
+tinyhouse_SRCS := $(wildcard $(SRC_DIR)/*.cpp)
+
+# print: 
+# 	@echo $(tinyhouse_SRCS)
 
 # Object Files
 tinyhouse_OBJS := $(patsubst $(SRC_DIR)/%.cpp, $(BUILD_DIR)/%.o, $(tinyhouse_SRCS))
