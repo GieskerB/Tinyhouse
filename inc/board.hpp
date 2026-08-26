@@ -13,11 +13,11 @@ class Board;
 
 class Board {
 
-    std::array<int8_t,3> highlighted_tile;
+    std::array<uint8_t,3> highlighted_tile;
 
     std::array<piece, 16> board{
         const_piece::black_ferz, const_piece::black_hors,  const_piece::black_wazir, const_piece::black_king,  // rank 4
-        const_piece::null_piece, const_piece::null_piece,  const_piece::null_piece,  const_piece::black_pawn,  // rank 3
+        const_piece::null_piece, const_piece::black_hors,  const_piece::null_piece,  const_piece::black_pawn,  // rank 3
         const_piece::white_pawn, const_piece::null_piece,  const_piece::null_piece,  const_piece::null_piece,  // rank 2
         const_piece::white_king, const_piece::white_wazir, const_piece::white_hors,  const_piece::white_ferz   // rank 1
     };
