@@ -3,6 +3,7 @@
 
 #include <array>
 #include <cassert>
+#include <string>
 
 class Board;
 
@@ -20,6 +21,9 @@ class Board {
     };
 
    public:
+    Board();
+    Board(const std::string fen);
+
     static constexpr uint8_t SIZE = 4;
 
     piece get_piece(uint8_t index) const;

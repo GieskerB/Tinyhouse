@@ -5,6 +5,9 @@
 
 #include "../inc/game_manager.hpp"
 
+// File = column
+// Rank = row
+
 int main() {
     GameManager manager;
 
