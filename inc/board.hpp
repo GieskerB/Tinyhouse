@@ -21,8 +21,6 @@ class Board {
     };
 
    public:
-    Board();
-    Board(const std::string fen);
 
     static constexpr uint8_t SIZE = 4;
 

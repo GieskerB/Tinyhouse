@@ -1,11 +1,5 @@
 #include "../inc/board.hpp"
 
-Board::Board() : Board(""){}
-Board::Board() {
-    // Handle TinyFen Notation
-}
-
-
 piece Board::get_piece(uint8_t index) const {
     assert(index < SIZE * SIZE);
     return board[index];
