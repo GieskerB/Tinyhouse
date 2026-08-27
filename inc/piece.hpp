@@ -3,8 +3,11 @@
 
 #include <cstdint>
 
-// Bitmap [I = id of piece, C = color of piece]
-// 000CCIII
+// Bitmap [
+// F = Flags,
+// I = id of piece,
+// C = color of piece
+// ] -> 00FCCIII
 typedef uint8_t piece;
 
 // piece id
@@ -15,11 +18,13 @@ constexpr uint8_t WAZIR = 0b011;
 constexpr uint8_t KING = 0b100;
 // piece color
 constexpr uint8_t WHITE = 0b1000, BLACK = 0b10000;
+constexpr uint8_t ID_MASK = 0b00111, COLOR_MASK = 0b11000, PIECE_MASK = ID_MASK | COLOR_MASK;
 
-constexpr uint8_t TYPE_MASKE=0b00111, COLOR_MASK=0b11000;
+// piece flag
+constexpr uint8_t PROMOTED = 0b100000;
 
 inline uint8_t PIECE_INDEX(piece p) {
-    const uint8_t piece_index = (p & TYPE_MASKE);
+    const uint8_t piece_index = (p & ID_MASK);
     const uint8_t color_index = (p & COLOR_MASK);
     const uint8_t index = piece_index | ((color_index & BLACK) >> 1);
     return index > 4 ? index - 3 : index;  // Close the gape of (5,6,7) without texture

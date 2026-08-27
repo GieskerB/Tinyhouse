@@ -9,7 +9,7 @@ constexpr float HOUSE_SIZE = BOARD_SIZE / 6 /*4*/;
 constexpr float WIDTH = BOARD_SIZE + HOUSE_SIZE;
 constexpr float HEIGHT = BOARD_SIZE;
 
-constexpr float TILE_SIZE = BOARD_SIZE / Board::TILE_COUNT;
+constexpr float TILE_SIZE = BOARD_SIZE / Board::SIZE;
 
 void init_renderer();
 

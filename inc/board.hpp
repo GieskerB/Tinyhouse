@@ -1,19 +1,16 @@
 #ifndef BOARD_HPP
 #define BOARD_HPP
 
-#include <SDL3/SDL_pixels.h>
-
 #include <array>
 #include <cassert>
 
 class Board;
 
-#include "piece.hpp"
 #include "move.hpp"
+#include "piece.hpp"
 
 class Board {
-
-    std::array<uint8_t,3> highlighted_tile;
+    std::array<uint8_t, 3> highlighted_tile;
 
     std::array<piece, 16> board{
         const_piece::black_ferz, const_piece::black_hors,  const_piece::black_wazir, const_piece::black_king,  // rank 4
@@ -23,7 +20,7 @@ class Board {
     };
 
    public:
-    static constexpr uint8_t TILE_COUNT = 4;
+    static constexpr uint8_t SIZE = 4;
 
     piece get_piece(uint8_t index) const;
     bool is_highlighted(uint8_t index) const;
@@ -32,10 +29,21 @@ class Board {
     void unselect_piece();
 
     void make_move(move move);
+    void undo_move(move move);
 
-    static uint8_t get_index(uint8_t file, uint8_t rank);
-    static uint8_t get_file(uint8_t index);
-    static uint8_t get_rank(uint8_t index);
+    static constexpr uint8_t get_index(uint8_t file, uint8_t rank) {
+        assert(rank < SIZE);
+        assert(file < SIZE);
+        return rank * SIZE + file;
+    }
+    static constexpr uint8_t get_file(uint8_t index) {
+        assert(index < SIZE * SIZE);
+        return index % SIZE;
+    }
+    static constexpr uint8_t get_rank(uint8_t index) {
+        assert(index < SIZE * SIZE);
+        return index / SIZE;
+    }
 };
 
 #endif

@@ -66,8 +66,8 @@ void init_renderer() {
 
 void render_board(const Board& board) {
     // Render Board background
-    for (unsigned char file = 0; file < Board::TILE_COUNT; ++file) {
-        for (unsigned char rank = 0; rank < Board::TILE_COUNT; ++rank) {
+    for (unsigned char file = 0; file < Board::SIZE; ++file) {
+        for (unsigned char rank = 0; rank < Board::SIZE; ++rank) {
             const auto& selected_color = (file + rank) % 2 == 0 ? LIGHT_TILE_SELECTED_COLOR : DARK_TILE_SELECTED_COLOR;
             const auto& color = (file + rank) % 2 == 0 ? LIGHT_TILE_COLOR : DARK_TILE_COLOR;
             // SET_COLOR(color);
@@ -78,8 +78,8 @@ void render_board(const Board& board) {
     }
 
     // Render Pieces on top
-    for (uint8_t file = 0; file < Board::TILE_COUNT; ++file) {
-        for (uint8_t rank = 0; rank < Board::TILE_COUNT; ++rank) {
+    for (uint8_t file = 0; file < Board::SIZE; ++file) {
+        for (uint8_t rank = 0; rank < Board::SIZE; ++rank) {
             const piece p = board.get_piece(Board::get_index(file, rank));
             if (p == const_piece::null_piece) continue;
             const SDL_FRect place{file * TILE_SIZE + HOUSE_SIZE, rank * TILE_SIZE, TILE_SIZE, TILE_SIZE};

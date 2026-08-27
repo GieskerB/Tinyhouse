@@ -1,12 +1,17 @@
 #ifndef MOVE_HPP
 #define MOVE_HPP
 
-#include <vector>
 #include <cstdint>
+#include <vector>
 
-// Bitmap [F = flag of move, D = destination of move, S = source of move]
-// 000000FF DDDDSSSS
-typedef uint16_t move;
+// Bitmap [
+// P = promoted piece,
+// C = captured piece, 
+// F = flag of move,
+// D = destination of move,
+// S = source of move
+// ] -> 00000000 PPPPPPCC CCCCFFFF DDDDSSSS
+typedef uint32_t move;
 
 #include "board.hpp"
 
