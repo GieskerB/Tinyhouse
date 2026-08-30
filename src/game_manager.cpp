@@ -28,16 +28,15 @@ void GameManager::loop() {
                     house.select(house_index);
                     board.unselect_piece();
                 } else {
-                    const int8_t file = static_cast<int8_t>((mouse_x - HOUSE_SIZE) / BOARD_SIZE * Board::SIZE);
                     const int8_t rank = static_cast<int8_t>(mouse_y / HEIGHT * Board::SIZE);
-                    board.select_piece(Board::get_index(file, rank));
+                    const int8_t file = static_cast<int8_t>((mouse_x - HOUSE_SIZE) / BOARD_SIZE * Board::SIZE);
+                    board.select_piece(Board::get_index(rank, file));
                     house.unselect();
 
-                    for (const auto& var : valid_moves(board, Board::get_index(file, rank))) {
+                    for (const auto& var : valid_moves(board, Board::get_index(rank, file))) {
                         std::cout << +var << "  ";
                     }
                     std::cout << "\n";
-
                 }
             }
         }

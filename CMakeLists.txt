@@ -13,14 +13,15 @@ target_sources(tinyhouse
     PRIVATE
       src/board.cpp
       src/game_manager.cpp
+      src/game.cpp
       src/house.cpp
       src/main.cpp
       src/move.cpp
       src/renderer.cpp
 )
 
-target_link_libraries(tinyhouse 
-    PRIVATE 
+target_link_libraries(tinyhouse
+    PRIVATE
       SDL3::SDL3
 )
 
@@ -30,18 +31,25 @@ include(FetchContent)
 FetchContent_Declare(
     Catch2
     GIT_REPOSITORY https://github.com/catchorg/Catch2.git
-    GIT_TAG        v3.16.0 
+    GIT_TAG        v3.16.0
 )
 FetchContent_MakeAvailable(Catch2)
 
-add_executable(tests
-    tests/test.cpp
+add_executable(tests)
+
+target_sources(tests
+    PRIVATE
+      tests/test.cpp
+      src/board.cpp
+      src/game.cpp
+      src/house.cpp
+      src/move.cpp
 )
 
 target_include_directories(tests PRIVATE inc)
 
 target_link_libraries(tests
-    PRIVATE 
+    PRIVATE
       Catch2::Catch2WithMain
       SDL3::SDL3
 )

@@ -24,6 +24,8 @@ class Board {
 
     static constexpr uint8_t SIZE = 4;
 
+    void overwrite(piece piece, uint8_t index);
+
     piece get_piece(uint8_t index) const;
     bool is_highlighted(uint8_t index) const;
 
@@ -33,7 +35,7 @@ class Board {
     void make_move(move move);
     void undo_move(move move);
 
-    static constexpr uint8_t get_index(uint8_t file, uint8_t rank) {
+    static constexpr uint8_t get_index(uint8_t rank, uint8_t file) {
         assert(rank < SIZE);
         assert(file < SIZE);
         return rank * SIZE + file;
