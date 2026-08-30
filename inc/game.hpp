@@ -5,22 +5,23 @@
 #include "house.hpp"
 
 class Game {
-    Board board;
-    House house;
+    Board m_board;
+    House m_house;
 
-    bool is_whites_turn;
-    uint16_t threefold_repetition_counter;
-    uint16_t halfmove_counter;
-    uint16_t fullmove_counter;
+    bool m_is_whites_turn;
+    uint16_t m_halfmove_counter;
+    uint16_t m_fullmove_counter;
 
    public:
     Game();
     Game(std::string tiny_fen);
 
-    inline bool is_blacks_turn() { return !is_whites_turn; }
-    inline uint16_t get_threefold_repetition_counter() { return +threefold_repetition_counter; }
-    inline uint16_t get_halfmove_counter() { return +halfmove_counter; }
-    inline uint16_t get_fullmove_counter() { return +fullmove_counter; }
+    inline const Board& board() const { return m_board; }
+    inline const House& house() const { return m_house; }
+
+    inline bool is_whites_turn() const { return m_is_whites_turn; }
+    inline uint16_t halfmove_counter() const { return +m_halfmove_counter; }
+    inline uint16_t fullmove_counter() const { return +m_fullmove_counter; }
 };
 
 #endif

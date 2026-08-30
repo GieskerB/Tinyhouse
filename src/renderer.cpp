@@ -71,7 +71,7 @@ void render_board(const Board& board) {
             const auto& selected_color = (file + rank) % 2 == 0 ? LIGHT_TILE_SELECTED_COLOR : DARK_TILE_SELECTED_COLOR;
             const auto& color = (file + rank) % 2 == 0 ? LIGHT_TILE_COLOR : DARK_TILE_COLOR;
             // SET_COLOR(color);
-            SET_COLOR(board.is_highlighted(Board::get_index(rank, file)) ? selected_color : color);
+            // SET_COLOR(board.is_highlighted(Board::get_index(rank, file)) ? selected_color : color);
             const SDL_FRect tile{file * TILE_SIZE + HOUSE_SIZE, rank * TILE_SIZE, TILE_SIZE, TILE_SIZE};
             SDL_RenderFillRect(renderer, &tile);
         }
@@ -115,11 +115,11 @@ void render_house(const House& house) {
 
     // Render either 0 / 1 / 2 pieces in house
     for (uint8_t index = 0; index < House::HOUSE_SIZE; ++index) {
-        if (house.is_highlighted(index)) {
-            SET_COLOR(HOUSE_SELECTED_COLOR);
-            const SDL_FRect select_rect{0, TILE_SIZE / 2 * index, HOUSE_SIZE, TILE_SIZE / 2};
-            SDL_RenderFillRect(renderer, &select_rect);
-        }
+        // if (house.is_highlighted(index)) {
+        //     SET_COLOR(HOUSE_SELECTED_COLOR);
+        //     const SDL_FRect select_rect{0, TILE_SIZE / 2 * index, HOUSE_SIZE, TILE_SIZE / 2};
+        //     SDL_RenderFillRect(renderer, &select_rect);
+        // }
 
         const uint8_t count = house.count(index);
         if (count == 0) continue;

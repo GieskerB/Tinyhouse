@@ -39,7 +39,8 @@ add_executable(tests)
 
 target_sources(tests
     PRIVATE
-      tests/test.cpp
+      tests/tiny_fen_test.cpp
+      tests/move_test.cpp
       src/board.cpp
       src/game.cpp
       src/house.cpp

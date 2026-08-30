@@ -2,34 +2,31 @@
 
 void House::push(piece p) {
     p ^= WHITE | BLACK;  // Switch color
-    uint8_t index = get_index(p);
-    assert(house[index] == 0 or house[index] == 1);
-    ++house[index];
+    uint8_t index = piece_to_index(p);
+    assert(m_house[index] == 0 or m_house[index] == 1);
+    ++m_house[index];
 }
 
 piece House::pop(uint8_t index) {
     assert(index < HOUSE_SIZE);
-    assert(house[index] == 1 or house[index] == 2);
-    --house[index];
+    assert(m_house[index] == 1 or m_house[index] == 2);
+    --m_house[index];
     return index_to_piece(index);
+}
+
+bool House::is_empty() const {
+    for (const uint8_t count: m_house ) {
+        if(count > 0 )return false;
+    }
+    return true;
 }
 
 uint8_t House::count(uint8_t index) const {
     assert(index < HOUSE_SIZE);
-    return house[index];
+    return m_house[index];
 }
 
-void House::select(uint8_t index) {
-    assert(index < HOUSE_SIZE);
-    selected_index = index;
-}
-void House::unselect() {
-    selected_index = -1;
-}
-
-bool House::is_highlighted(uint8_t index) const { return index == selected_index; }
-
-uint8_t House::get_index(piece p) {
+uint8_t House::piece_to_index(piece p) {
     assert(p != const_piece::white_king and p != const_piece::black_king);
     uint8_t index = PIECE_INDEX(p);
     if (index > 3)
