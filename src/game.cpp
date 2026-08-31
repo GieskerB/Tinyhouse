@@ -74,7 +74,7 @@ Game::Game(std::string tiny_fen) {
                     if (tiny_fen[i + 1] != ' ')
                         throw_character_error("House section must end with space", " ", tiny_fen[i + 1]);
                     if (!board_ready) {
-                        house_end = i;
+                        house_end = i+1;
                         i = -1;
                     } else {
                         ++i;
@@ -121,14 +121,15 @@ Game::Game(std::string tiny_fen) {
         if (!board_ready) {
             switch (c) {
                 case '\\':
+                    ++rank;
                     board_ready = true;
-                    if (rank != 4) throw_number_error("Wrong number of ranks in board, must be", Board::SIZE);
-                    if (file != 4) throw_number_error("Wrong number of files in board, must be", Board::SIZE);
+                    if (rank != 4) throw_number_error("Wrong number of ranks in board, it was", rank);
+                    if (file != 4) throw_number_error("Wrong number of files in board, it was", file);
                     i = house_end;
                     continue;
                 case '/':
                     ++rank;
-                    if (file != 4) throw_number_error("A Line ended with wrong size! It should be", Board::SIZE);
+                    if (file != 4) throw_number_error("A Line ended with wrong size, it was", file);
                     file = 0;
                     continue;
                 case 'p':
@@ -183,7 +184,7 @@ Game::Game(std::string tiny_fen) {
                 case '2':
                 case '3':
                 case '4':
-                    for (uint8_t j = 0; j > c - '0'; ++j) {
+                    for (uint8_t j = 0; j < c - '0'; ++j) {
                         m_board.overwrite(const_piece::null_piece, Board::get_index(rank, file++));
                     }
                     if (file > 4) throw_number_error("A Rank has too much files! It should be", Board::SIZE);
@@ -267,5 +268,3 @@ Game::Game(std::string tiny_fen) {
         break;
     }
 }
-
-

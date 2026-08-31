@@ -4,6 +4,8 @@
 
 #include "../inc/game.hpp"
 
+// Base Test
+
 TEST_CASE("TinyFen Test - Starter Fen") {
     try {
         Game game;
@@ -27,7 +29,7 @@ TEST_CASE("TinyFen Test - Starter Fen") {
         REQUIRE(game.board().get_piece(9) == const_piece::null_piece);
         REQUIRE(game.board().get_piece(10) == const_piece::null_piece);
         REQUIRE(game.board().get_piece(11) == const_piece::null_piece);
-        
+
         REQUIRE(game.board().get_piece(12) == const_piece::white_king);
         REQUIRE(game.board().get_piece(13) == const_piece::white_wazir);
         REQUIRE(game.board().get_piece(14) == const_piece::white_hors);
@@ -41,6 +43,8 @@ TEST_CASE("TinyFen Test - Starter Fen") {
         REQUIRE(false);
     }
 }
+
+// Counter Test
 
 TEST_CASE("TinyFen Test - Altered Starter Fen - Counter 1") {
     try {
@@ -102,8 +106,9 @@ TEST_CASE("TinyFen Test - Altered Starter Fen - Counter Fail 2") {
     }
 }
 
+// Turn Test
+
 TEST_CASE("TinyFen Test - Altered Starter Fen - Black Turn") {
-    SECTION(""){}
     try {
         Game game("fhwk/3p/P3/KWHF\\- b - 0 0");
         REQUIRE(!game.is_whites_turn());
@@ -113,14 +118,53 @@ TEST_CASE("TinyFen Test - Altered Starter Fen - Black Turn") {
     }
 }
 
+// Board Test
 
-// // Example 2: Perft validation test structure
-// TEST_CASE("Perft node count checks", "[perft]") {
-//     SECTION("Depth 1 starting position") {
+TEST_CASE("TinyFen Test - Board Test - Different piece positions 1") {
+    try {
+        Game game("fh1k/2pw/P3/KWHF\\- w - 0 0");
+        REQUIRE(game.board().get_piece(2) == const_piece:: null_piece);
+        REQUIRE(game.board().get_piece(6) == const_piece:: black_pawn);
+        REQUIRE(game.board().get_piece(7) == const_piece:: black_wazir);
+    } catch (const std::invalid_argument& iae) {
+        std::cerr << iae.what() << "\n";
+        REQUIRE(false);
+    }
+}
 
-//         unsigned long long expected_nodes = 20;
-//         unsigned long long calculated_nodes = 20;
+TEST_CASE("TinyFen Test - Board Test - Different piece positions 2") {
+    try {
+        Game game("4/fFhH/wWkK/p1P1\\- w - 0 0");
+        REQUIRE(game.board().get_piece(0) == const_piece:: null_piece);
+        REQUIRE(game.board().get_piece(3) == const_piece:: null_piece);
+        REQUIRE(game.board().get_piece(4) == const_piece:: black_ferz);
+        REQUIRE(game.board().get_piece(5) == const_piece:: white_ferz);
+        REQUIRE(game.board().get_piece(12) == const_piece:: black_pawn);
+        REQUIRE(game.board().get_piece(13) == const_piece:: null_piece);
+        REQUIRE(game.board().get_piece(14) == const_piece:: white_pawn);
+        REQUIRE(game.board().get_piece(15) == const_piece:: null_piece);
+    } catch (const std::invalid_argument& iae) {
+        std::cerr << iae.what() << "\n";
+        REQUIRE(false);
+    }
+}
 
-//         REQUIRE(calculated_nodes == expected_nodes);
-//     }
-// }
+TEST_CASE("TinyFen Test - Board Test - Wrong piece count 2") {
+    try {
+        Game game("4/fFhH/wWkK/p1P1\\- w - 0 0");
+        REQUIRE(game.board().get_piece(0) == const_piece:: null_piece);
+        REQUIRE(game.board().get_piece(3) == const_piece:: null_piece);
+        REQUIRE(game.board().get_piece(4) == const_piece:: black_ferz);
+        REQUIRE(game.board().get_piece(5) == const_piece:: white_ferz);
+        REQUIRE(game.board().get_piece(12) == const_piece:: black_pawn);
+        REQUIRE(game.board().get_piece(13) == const_piece:: null_piece);
+        REQUIRE(game.board().get_piece(14) == const_piece:: white_pawn);
+        REQUIRE(game.board().get_piece(15) == const_piece:: null_piece);
+    } catch (const std::invalid_argument& iae) {
+        std::cerr << iae.what() << "\n";
+        REQUIRE(false);
+    }
+}
+
+
+// House Test
