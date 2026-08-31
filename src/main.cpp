@@ -10,13 +10,8 @@
 // Rank = row
 
 int main() {
-    // GameManager manager;
 
-    // manager.init();
-    // manager.loop();
-    // manager.close();
-
-    Game game;
+    Game game("1h1k/4/4/KWHF\\PFPW w - 0 0");
 
     return 0;
 }

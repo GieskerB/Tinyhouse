@@ -9,12 +9,14 @@ class House;
 #include "piece.hpp"
 
 class House {
-    // house cant hold to king, so only 8 instead of 10 places.
-    std::array<uint8_t, 8> m_house{0};
-
    public:
     static constexpr uint8_t HOUSE_SIZE = 8;
 
+   private:
+    // house cant hold the king, so only 8 instead of 10 places.
+    std::array<uint8_t, HOUSE_SIZE> m_house{0};
+
+   public:
     void push(piece);
     piece pop(uint8_t);
 

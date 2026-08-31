@@ -1,7 +1,6 @@
 #include "../inc/house.hpp"
 
 void House::push(piece p) {
-    p ^= WHITE | BLACK;  // Switch color
     uint8_t index = piece_to_index(p);
     assert(m_house[index] == 0 or m_house[index] == 1);
     ++m_house[index];

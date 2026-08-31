@@ -27,6 +27,8 @@ static void throw_missing_section_error(std::string section) {
     throw std::invalid_argument(sstream.str());
 }
 
+#include <iostream>
+
 Game::Game() : Game(STARTER_FEN) {}
 Game::Game(std::string tiny_fen) {
     // Decode the TinyFen
@@ -35,6 +37,7 @@ Game::Game(std::string tiny_fen) {
     bool house_ready = false;
     bool turn_ready = false;
     bool promotion_ready = false;
+    bool first_promotion = false;
 
     uint8_t temp;
     uint8_t loop_start = 0;
@@ -54,7 +57,7 @@ Game::Game(std::string tiny_fen) {
         ferz_count = 2;
         hors_count = 2;
         wazir_count = 2;
-        king_count = 2;
+        king_count = 0b10001;
     }
 
     const auto house_start = tiny_fen.find_first_of('\\');
@@ -65,6 +68,7 @@ Game::Game(std::string tiny_fen) {
     const uint8_t tiny_fen_len = tiny_fen.size();
     for (int8_t i = static_cast<int8_t>(house_start + 1); i < tiny_fen_len; ++i) {
         const char c = tiny_fen[i];
+        // std::cout << "i: " << +i << " c: " << c << "\n";
         // handle house first fo correctly identify promoted pieces
         if (!house_ready) {
             switch (c) {
@@ -73,14 +77,21 @@ Game::Game(std::string tiny_fen) {
                     if (tiny_fen_len <= i + 1) throw_missing_section_error("Board");
                     if (tiny_fen[i + 1] != ' ')
                         throw_character_error("House section must end with space", " ", tiny_fen[i + 1]);
+                    house_ready = true;
                     if (!board_ready) {
-                        house_end = i+1;
+                        house_end = i + 1;
                         i = -1;
                     } else {
                         ++i;
                     }
+                    continue;
                 case ' ':
+                    if (tiny_fen_len <= i) throw_missing_section_error("Board");
                     house_ready = true;
+                    if (!board_ready) {
+                        house_end = i;
+                        i = -1;
+                    }
                     continue;
                 case 'p':
                     m_house.push(const_piece::black_pawn);
@@ -141,35 +152,27 @@ Game::Game(std::string tiny_fen) {
                     ++pawn_count;
                     continue;
                 case 'f':
-                    // Assumption regarding promoted peaced: Always the latest added pieces are promoted.
-                    // Missing information to differentiate
-                    m_board.overwrite(const_piece::black_ferz | (ferz_count >= 2 ? PROMOTED : 0),
-                                    Board::get_index(rank, file++));
+                    m_board.overwrite(const_piece::black_ferz, Board::get_index(rank, file++));
                     ++ferz_count;
                     continue;
                 case 'F':
-                    m_board.overwrite(const_piece::white_ferz | (ferz_count >= 2 ? PROMOTED : 0),
-                                    Board::get_index(rank, file++));
+                    m_board.overwrite(const_piece::white_ferz, Board::get_index(rank, file++));
                     ++ferz_count;
                     continue;
                 case 'h':
-                    m_board.overwrite(const_piece::black_hors | (hors_count >= 2 ? PROMOTED : 0),
-                                    Board::get_index(rank, file++));
+                    m_board.overwrite(const_piece::black_hors, Board::get_index(rank, file++));
                     ++hors_count;
                     continue;
                 case 'H':
-                    m_board.overwrite(const_piece::white_hors | (hors_count >= 2 ? PROMOTED : 0),
-                                    Board::get_index(rank, file++));
+                    m_board.overwrite(const_piece::white_hors, Board::get_index(rank, file++));
                     ++hors_count;
                     continue;
                 case 'w':
-                    m_board.overwrite(const_piece::black_wazir | (wazir_count >= 2 ? PROMOTED : 0),
-                                    Board::get_index(rank, file++));
+                    m_board.overwrite(const_piece::black_wazir, Board::get_index(rank, file++));
                     ++wazir_count;
                     continue;
                 case 'W':
-                    m_board.overwrite(const_piece::white_wazir | (wazir_count >= 2 ? PROMOTED : 0),
-                                    Board::get_index(rank, file++));
+                    m_board.overwrite(const_piece::white_wazir, Board::get_index(rank, file++));
                     ++wazir_count;
                     continue;
                 case 'k':
@@ -178,7 +181,8 @@ Game::Game(std::string tiny_fen) {
                     continue;
                 case 'K':
                     m_board.overwrite(const_piece::white_king, Board::get_index(rank, file++));
-                    ++king_count;
+                    // use 16 here to efficiently count black and white kings in one variable
+                    king_count += 16;
                     continue;
                 case '1':
                 case '2':
@@ -205,23 +209,17 @@ Game::Game(std::string tiny_fen) {
             turn_ready = true;
 
             // 2. Check that the right amount of pieces got added to the game
-            const uint8_t total_count = pawn_count + ferz_count + hors_count + wazir_count + king_count;
-            const bool cond1 = total_count == 10;
-            const bool cond2 = pawn_count <= 2;
-            const bool cond3 = ferz_count >= 2 and ferz_count <= 4;
-            const bool cond4 = hors_count >= 2 and hors_count <= 4;
-            const bool cond5 = wazir_count >= 2 and wazir_count <= 4;
-            const bool cond6 = king_count == 2;
-            if (!cond1 or !cond2 or !cond3 or !cond4 or !cond5 or !cond6) {
-                std::stringstream err_msg;
-                err_msg << "Incorrect number of pieces:\n"
-                        << "\tPawn " << +pawn_count << "\n"
-                        << "\tFerz " << +ferz_count << "\n"
-                        << "\tHors " << +hors_count << "\n"
-                        << "\tWazir " << +wazir_count << "\n"
-                        << "\tKing " << +king_count << ".";
-                throw_general_error(err_msg.str());
-            }
+            const uint8_t total_count =
+                pawn_count + ferz_count + hors_count + wazir_count + (king_count & 0b1111) + (king_count >> 4);
+
+            if (total_count != 10) throw_number_error("Wrong number of pieces, it was", total_count);
+            if (pawn_count > 2) throw_number_error("Wrong number pawn, it was", pawn_count);
+            if (ferz_count < 2 or ferz_count > 4) throw_number_error("Wrong number ferz, it was", ferz_count);
+            if (hors_count < 2 or hors_count > 4) throw_number_error("Wrong number hors, it was", hors_count);
+            if (wazir_count < 2 or wazir_count > 4) throw_number_error("Wrong number wazir, it was", wazir_count);
+            if (king_count != 0b10001)
+                throw_number_error("Wrong number of kings - one per color!, it was",
+                                   (king_count & 0b1111) + (king_count >> 4));
             continue;
         }
         if (!promotion_ready) {
@@ -234,6 +232,8 @@ Game::Game(std::string tiny_fen) {
                     ++i;
                     promotion_ready = true;
                     continue;
+                // case ' ':
+                //     if (tiny_fen_len <= i ) throw_missing_section_error("Turn");
                 case 'a':
                 case 'b':
                 case 'c':
@@ -241,16 +241,19 @@ Game::Game(std::string tiny_fen) {
                     if (tiny_fen_len <= i + 2) throw_missing_section_error("Promotion");
                     if (tiny_fen[i + 1] < '1' or tiny_fen[i + 1] > '4')
                         throw_character_error("Promotion location incorrect (example: 'a3')", "1/2/3/4", c);
-                    temp = Board::get_index(tiny_fen[i + 1] - '1', tiny_fen[i] - 'a');
+                    temp = Board::get_index(Board::SIZE - (tiny_fen[i + 1] - '0'), tiny_fen[i] - 'a');
+                    if ((m_board.get_piece(temp) & KING) != 0) throw_general_error("Can not promote the king");
                     m_board.overwrite(m_board.get_piece(temp) | PROMOTED, temp);
                     if ((++promotion_count + pawn_count) > 2)
                         throw_general_error("Only two pawns (max) can be promoted!");
                     if (tiny_fen[i + 2] != ' ')
                         throw_character_error("Promotion section must end with space", " ", tiny_fen[i + 2]);
-                    ++i;  // skip space character
+                    i += 2;  // skip space character
+                    first_promotion = true;
                     continue;
                 default:
-                    throw_character_error("Invalid character in Promotion section", "a1/a2/../d3/d4", c);
+                    if (!first_promotion)
+                        throw_character_error("Invalid character in Promotion section", "a1/a2/../d3/d4", c);
             }
         }
 
