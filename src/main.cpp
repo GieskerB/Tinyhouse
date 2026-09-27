@@ -10,8 +10,9 @@
 // Rank = row
 
 int main() {
-
     Game game("1h1k/4/4/KWHF\\PFPW w - 0 0");
+
+    valid_moves(game.board(),0);
 
     return 0;
 }
