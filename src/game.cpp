@@ -40,7 +40,6 @@ Game::Game(std::string tiny_fen) {
     bool first_promotion = false;
 
     uint8_t temp;
-    uint8_t loop_start = 0;
     uint8_t rank = 0;
     uint8_t file = 0;
 
@@ -260,11 +259,11 @@ Game::Game(std::string tiny_fen) {
         if (tiny_fen_len <= i + 1) throw_missing_section_error("Promotion");
         const std::string remaining_fen = tiny_fen.substr(i, tiny_fen_len - i);
         std::stringstream sstream{remaining_fen};
-        if (!(sstream >> m_halfmove_counter) or m_halfmove_counter < 0)
+        if (!(sstream >> m_halfmove_counter))
             throw_character_error("Could ot convert Halfmove Counter to number", "NUMBER", sstream.str()[0]);
-        if (!(sstream >> m_fullmove_counter) or m_fullmove_counter < 0)
+        if (!(sstream >> m_fullmove_counter))
             throw_character_error("Could ot convert Fullmove Counter to number", "NUMBER", sstream.str()[0]);
-        if (m_halfmove_counter / 2 > m_fullmove_counter) {
+        if ((m_halfmove_counter / 2) > m_fullmove_counter) {
             throw_general_error("Invalid relation between counters. There cant be more Halfmoves then 2 * Fullmoves");
         }
         // Done

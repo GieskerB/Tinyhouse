@@ -24,7 +24,7 @@ void GameManager::loop() {
                 const float mouse_x = event.button.x;
                 const float mouse_y = event.button.y;
                 if (mouse_x < HOUSE_SIZE) {
-                    const int8_t house_index = static_cast<int>(mouse_y / HEIGHT * House::HOUSE_SIZE);
+                    // const int8_t house_index = static_cast<int>(mouse_y / HEIGHT * House::HOUSE_SIZE);
                     // house.select(house_index);
                     // board.unselect_piece();
                 } else {

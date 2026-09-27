@@ -65,16 +65,16 @@ static std::vector<int8_t> hors_offsets(const uint8_t color_mask, const Board& b
     if (Board::get_file(index) > 1 and board.get_piece(index - 1) == const_piece::null_piece) {
         // Can move left (not blocking)
         if (Board::get_rank(index) > 0)
-            push_if_not_own_capture(board, -2 - (Board::SIZE - 1), index, color_mask, attack_offset);
+            push_if_not_own_capture(board, -2 - Board::SIZE, index, color_mask, attack_offset);
         if (Board::get_rank(index) < Board::SIZE - 1)
-            push_if_not_own_capture(board, -2 - (Board::SIZE + 1), index, color_mask, attack_offset);
+            push_if_not_own_capture(board, -2 + Board::SIZE, index, color_mask, attack_offset);
     }
     if (Board::get_file(index) < Board::SIZE - 2 and board.get_piece(index + 1) == const_piece::null_piece) {
         // Can move right (not blocking)
         if (Board::get_rank(index) > 0)
-            push_if_not_own_capture(board, +2 - (Board::SIZE - 1), index, color_mask, attack_offset);
+            push_if_not_own_capture(board, +2 - Board::SIZE, index, color_mask, attack_offset);
         if (Board::get_rank(index) < Board::SIZE - 1)
-            push_if_not_own_capture(board, +2 - (Board::SIZE + 1), index, color_mask, attack_offset);
+            push_if_not_own_capture(board, +2 + Board::SIZE, index, color_mask, attack_offset);
     }
     if (Board::get_rank(index) > 1 and board.get_piece(index - Board::SIZE) == const_piece::null_piece) {
         // Can move up (not blocking)
@@ -139,7 +139,6 @@ static std::vector<int8_t> king_offsets(const uint8_t color_mask, const Board& b
     }
     if (Board::get_rank(index) < Board::SIZE - 1) {
         // Move Down
-        attack_offset.push_back(+Board::SIZE);
         push_if_not_own_capture(board, +Board::SIZE, index, color_mask, attack_offset);
         // Move Down-Left
         if (Board::get_file(index) > 0)
@@ -147,6 +146,14 @@ static std::vector<int8_t> king_offsets(const uint8_t color_mask, const Board& b
     }
 
     return attack_offset;
+}
+
+std::vector<int8_t> valid_move_offsets(const Board& board, const char str_index[3]){
+    assert((str_index [0] >= 'a' and str_index[0] <='d') or (str_index [0] >= 'A' and str_index[0] <='D'));
+    assert((str_index [1] >= '0' and str_index[1] <='4'));
+    assert(str_index[2] == '\0');
+    uint8_t piece_index =  (str_index[0] - 'a') + (Board::SIZE - (str_index [1] - '0')) * Board::SIZE;
+    return valid_move_offsets(board,piece_index);
 }
 
 std::vector<int8_t> valid_move_offsets(const Board& board, uint8_t piece_index) {

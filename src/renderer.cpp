@@ -68,9 +68,9 @@ void render_board(const Board& board) {
     // Render Board background
     for (unsigned char rank = 0; rank < Board::SIZE; ++rank) {
         for (unsigned char file = 0; file < Board::SIZE; ++file) {
-            const auto& selected_color = (file + rank) % 2 == 0 ? LIGHT_TILE_SELECTED_COLOR : DARK_TILE_SELECTED_COLOR;
+            // const auto& selected_color = (file + rank) % 2 == 0 ? LIGHT_TILE_SELECTED_COLOR : DARK_TILE_SELECTED_COLOR;
             const auto& color = (file + rank) % 2 == 0 ? LIGHT_TILE_COLOR : DARK_TILE_COLOR;
-            // SET_COLOR(color);
+            SET_COLOR(color);
             // SET_COLOR(board.is_highlighted(Board::get_index(rank, file)) ? selected_color : color);
             const SDL_FRect tile{file * TILE_SIZE + HOUSE_SIZE, rank * TILE_SIZE, TILE_SIZE, TILE_SIZE};
             SDL_RenderFillRect(renderer, &tile);

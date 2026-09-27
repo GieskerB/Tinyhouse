@@ -2,6 +2,7 @@ cmake_minimum_required(VERSION 3.23)
 
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
+add_compile_options(-Wall -Wextra -Werror -O3)
 
 project(Tinyhouse)
 
@@ -18,6 +19,21 @@ target_sources(tinyhouse
       src/main.cpp
       src/move.cpp
       src/renderer.cpp
+)
+
+set_target_properties(tinyhouse
+    PROPERTIES
+      CXX_STANDARD 20
+      CXX_STANDARD_REQUIRED ON
+      CXX_EXTENSIONS OFF
+)
+
+target_compile_options(tinyhouse
+    PRIVATE
+      -Wall
+      -Wextra
+      -Werror
+      -O3
 )
 
 target_link_libraries(tinyhouse
@@ -40,7 +56,7 @@ add_executable(tests)
 target_sources(tests
     PRIVATE
       tests/tiny_fen_test.cpp
-      tests/move_test.cpp
+      tests/move_offset_test.cpp
       src/board.cpp
       src/game.cpp
       src/house.cpp

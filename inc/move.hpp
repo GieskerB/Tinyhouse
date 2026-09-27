@@ -20,6 +20,8 @@ constexpr uint16_t CAPTURE = 0b001000000000;
 constexpr uint16_t PROMOTION = 0b010000000000;
 constexpr uint16_t CHECK = 0b100000000000;
 
+std::vector<int8_t> valid_move_offsets(const Board& board, const char str_index[3]);
+std::vector<int8_t> valid_move_offsets(const Board& board, uint8_t piece_index);
 std::vector<move> valid_moves(const Board& board, uint8_t piece_index);
 
 #endif
