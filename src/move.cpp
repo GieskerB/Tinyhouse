@@ -182,161 +182,114 @@ uint8_t find_king(const Board& board, uint8_t color) {
 }
 
 #define INDEX_SHIFT(index, base) (index - base)
+#define SHIFT(bitmap, index, base) \
+    (INDEX_SHIFT(index, base) < 0) ? bitmap << -INDEX_SHIFT(index, base) : bitmap >> INDEX_SHIFT(index, base)
+#define FILE(i) Board::get_file(i)
+#define RANK(i) Board::get_rank(i)
 
-constexpr auto array = [] {
-    std::array<uint16_t, 16 * 6> array{0};
-    constexpr int8_t b2 = 9;
-    constexpr int8_t c3 = 6;
-    constexpr uint8_t piece_offset = 16;
+/**
+ * List of all bitmaps for each piece on every tile to see where it can move / capture
+ * Every 16 values build a group for one piece. Index 0 is top left and index 15 is bottom right
+ * This is the list of the pieces to access
+ * - white pawn
+ * - black pawn
+ * - ferz
+ * - hors
+ * - wazir
+ * - king
+ */
+constexpr auto move_bitmasks = [] {
+    constexpr uint8_t piece_offset = Board::SIZE * Board::SIZE;
+    std::array<uint16_t, piece_offset * 6> array{0};
+    // assume default bitmap is centered on b2 (or c3)
+    constexpr int8_t b2 = 9, c3 = 6;
     // Fill 1st 16 with WHITE PAWN
-    // assume it centered on b2
     constexpr uint16_t left_pawn_white_b2 = 0b0000'1100'0000'0000;
     constexpr uint16_t right_pawn_white_b2 = 0b0000'0110'0000'0000;
-    for (uint8_t i = 0; i < 16; ++i) {
-        if (INDEX_SHIFT(i, b2) < 0) {
-            array[i + piece_offset * 0] |= Board::get_file(i) > 0 ? left_pawn_white_b2 << -INDEX_SHIFT(i, b2) : 0b0;
-            array[i + piece_offset * 0] |= Board::get_file(i) < (Board::SIZE - 1) ? right_pawn_white_b2 << -INDEX_SHIFT(i, b2) : 0b0;
-        } else {
-            array[i + piece_offset * 0] |= Board::get_file(i) > 0 ? left_pawn_white_b2 >> INDEX_SHIFT(i, b2) : 0b0;
-            array[i + piece_offset * 0] |= Board::get_file(i) < (Board::SIZE - 1) ? right_pawn_white_b2 >> INDEX_SHIFT(i, b2) : 0b0;
-        }
+    for (uint8_t i = 0; i < piece_offset; ++i) {
+        array[i + piece_offset * 0] |= FILE(i) > 0 ? SHIFT(left_pawn_white_b2, i, b2) : 0b0;
+        array[i + piece_offset * 0] |= FILE(i) < (Board::SIZE - 1) ? SHIFT(right_pawn_white_b2, i, b2) : 0b0;
     }
     // Fill 2nd 16 with BLACK PAWN
-    // assume it centered on b2
     constexpr uint16_t left_pawn_black_b2 = 0b0000'0000'0000'1100;
     constexpr uint16_t right_pawn_black_b2 = 0b0000'0000'0000'0110;
-    for (uint8_t i = 0; i < 16; ++i) {
-        if (INDEX_SHIFT(i, b2) < 0) {
-            array[i + piece_offset * 1] |= Board::get_file(i) > 0 ? left_pawn_black_b2 << -INDEX_SHIFT(i, b2) : 0b0;
-            array[i + piece_offset * 1] |= Board::get_file(i) < (Board::SIZE - 1) ? right_pawn_black_b2 << -INDEX_SHIFT(i, b2) : 0b0;
-        } else {
-            array[i + piece_offset * 1] |= Board::get_file(i) > 0 ? left_pawn_black_b2 >> INDEX_SHIFT(i, b2) : 0b0;
-            array[i + piece_offset * 1] |= Board::get_file(i) < (Board::SIZE - 1) ? right_pawn_black_b2 >> INDEX_SHIFT(i, b2) : 0b0;
-        }
+    for (uint8_t i = 0; i < piece_offset; ++i) {
+        array[i + piece_offset * 1] |= FILE(i) > 0 ? SHIFT(left_pawn_black_b2, i, b2) : 0b0;
+        array[i + piece_offset * 1] |= FILE(i) < (Board::SIZE - 1) ? SHIFT(right_pawn_black_b2, i, b2) : 0b0;
     }
-    
     // Fill 3rd 16 with FERZ
-    // assume it centered on b2
     constexpr uint16_t top_left_ferz_b2 = 0b0000'1000'0000'0000;
-    constexpr uint16_t bottom_left_ferz_b2 = 0b0000'0000'0000'1000;
+    constexpr uint16_t bot_left_ferz_b2 = 0b0000'0000'0000'1000;
     constexpr uint16_t top_right_ferz_b2 = 0b0000'0010'0000'0000;
-    constexpr uint16_t bottom_right_ferz_b2 = 0b0000'0000'0000'0010;
-    for (uint8_t i = 0; i < 16; ++i) {
-        if (INDEX_SHIFT(i, b2) < 0) {
-            array[i + piece_offset * 2] |= Board::get_file(i) > 0 and Board::get_rank(i) > 0 ? top_left_ferz_b2 << -INDEX_SHIFT(i, b2) : 0b0;
-            array[i + piece_offset * 2] |= Board::get_file(i) > 0 and Board::get_rank(i) < Board::SIZE -1 ? bottom_left_ferz_b2 << -INDEX_SHIFT(i, b2) : 0b0;
-            array[i + piece_offset * 2] |= Board::get_file(i) < Board::SIZE -1 and Board::get_rank(i) > 0 ? top_right_ferz_b2 << -INDEX_SHIFT(i, b2) : 0b0;
-            array[i + piece_offset * 2] |= Board::get_file(i) < Board::SIZE -1 and Board::get_rank(i) < Board::SIZE -1 ? bottom_right_ferz_b2 << -INDEX_SHIFT(i, b2) : 0b0;
-        } else {
-            array[i + piece_offset * 2] |= Board::get_file(i) > 0 and Board::get_rank(i) > 0 ? top_left_ferz_b2 >> INDEX_SHIFT(i, b2) : 0b0;
-            array[i + piece_offset * 2] |= Board::get_file(i) > 0 and Board::get_rank(i) < Board::SIZE -1 ? bottom_left_ferz_b2 >> INDEX_SHIFT(i, b2) : 0b0;
-            array[i + piece_offset * 2] |= Board::get_file(i) < Board::SIZE -1 and Board::get_rank(i) > 0 ? top_right_ferz_b2 >> INDEX_SHIFT(i, b2) : 0b0;
-            array[i + piece_offset * 2] |= Board::get_file(i) < Board::SIZE -1 and Board::get_rank(i) < Board::SIZE -1 ? bottom_right_ferz_b2 >> INDEX_SHIFT(i, b2) : 0b0;
-        }
+    constexpr uint16_t bot_right_ferz_b2 = 0b0000'0000'0000'0010;
+    for (uint8_t i = 0; i < piece_offset; ++i) {
+        array[i + piece_offset * 2] |= FILE(i) > 0 and RANK(i) > 0 ? SHIFT(top_left_ferz_b2, i, b2) : 0b0;
+        array[i + piece_offset * 2] |= FILE(i) > 0 and RANK(i) < Board::SIZE - 1 ? SHIFT(bot_left_ferz_b2, i, b2) : 0b0;
+        array[i + piece_offset * 2] |= FILE(i) < Board::SIZE - 1 and RANK(i) > 0 ? SHIFT(top_right_ferz_b2, i, b2) : 0b0;
+        array[i + piece_offset * 2] |= FILE(i) < Board::SIZE - 1 and RANK(i) < Board::SIZE - 1 ? SHIFT(bot_right_ferz_b2, i, b2) : 0b0;
     }
-
     // Fill 4th 16 with HORS
-    // assume it centered on b2
     constexpr uint16_t top_left_hors_b2 = 0b1000'0000'0000'0000;
     constexpr uint16_t top_right_hors_b2 = 0b0010'0000'0000'0000;
     constexpr uint16_t right_top_hors_b2 = 0b0000'0001'0000'0000;
-    constexpr uint16_t right_bottom_hors_b2 = 0b0000'0000'0000'0001;
-    for (uint8_t i = 0; i < 16; ++i) {
-        if (INDEX_SHIFT(i, b2) < 0) {
-            array[i + piece_offset * 3] |= Board::get_file(i) > 0 and Board::get_rank(i) > 1 ? top_left_hors_b2 << -INDEX_SHIFT(i, b2) : 0b0;
-            array[i + piece_offset * 3] |= Board::get_file(i) < Board::SIZE -1 and Board::get_rank(i) > 1 ? top_right_hors_b2 << -INDEX_SHIFT(i, b2) : 0b0;
-            array[i + piece_offset * 3] |= Board::get_file(i) < Board::SIZE -2 and Board::get_rank(i) > 0 ? right_top_hors_b2 << -INDEX_SHIFT(i, b2) : 0b0;
-            array[i + piece_offset * 3] |= Board::get_file(i) < Board::SIZE -2 and Board::get_rank(i) < Board::SIZE -1 ? right_bottom_hors_b2 << -INDEX_SHIFT(i, b2) : 0b0;
-        } else {
-            array[i + piece_offset * 3] |= Board::get_file(i) > 0 and Board::get_rank(i) > 1 ? top_left_hors_b2 >> INDEX_SHIFT(i, b2) : 0b0;
-            array[i + piece_offset * 3] |= Board::get_file(i) < Board::SIZE -1 and Board::get_rank(i) > 1 ? top_right_hors_b2 >> INDEX_SHIFT(i, b2) : 0b0;
-            array[i + piece_offset * 3] |= Board::get_file(i) < Board::SIZE -2 and Board::get_rank(i) > 0  ? right_top_hors_b2 >> INDEX_SHIFT(i, b2) : 0b0;
-            array[i + piece_offset * 3] |= Board::get_file(i) < Board::SIZE -2 and Board::get_rank(i) < Board::SIZE -1 ? right_bottom_hors_b2 >> INDEX_SHIFT(i, b2) : 0b0;
-        }
-    }  
-
-    // // assume it centered on c3
-    constexpr uint16_t bottom_right_hors_c3 = 0b0000'0000'0000'0001;
-    constexpr uint16_t bottom_left_hors_c3 = 0b0000'0000'0000'0100;
-    constexpr uint16_t left_bottom_hors_c3 = 0b0000'0000'1000'0000;
+    constexpr uint16_t right_bot_hors_b2 = 0b0000'0000'0000'0001;
+    constexpr uint16_t bot_right_hors_c3 = 0b0000'0000'0000'0001;
+    constexpr uint16_t bot_left_hors_c3 = 0b0000'0000'0000'0100;
+    constexpr uint16_t left_bot_hors_c3 = 0b0000'0000'1000'0000;
     constexpr uint16_t left_top_hors_c3 = 0b1000'0000'0000'0000;
-        for (uint8_t i = 0; i < 16; ++i) {
-        if (INDEX_SHIFT(i, c3) < 0) {
-            array[i + piece_offset * 3] |= Board::get_file(i) < Board::SIZE -1 and Board::get_rank(i) < Board::SIZE -2 ? bottom_right_hors_c3 << -INDEX_SHIFT(i, c3) : 0b0;
-            array[i + piece_offset * 3] |= Board::get_file(i) > 0 and Board::get_rank(i) < Board::SIZE -2 ? bottom_left_hors_c3 << -INDEX_SHIFT(i, c3) : 0b0;
-            array[i + piece_offset * 3] |= Board::get_file(i) > 1 and Board::get_rank(i) < Board::SIZE -1 ? left_bottom_hors_c3 << -INDEX_SHIFT(i, c3) : 0b0;
-            array[i + piece_offset * 3] |= Board::get_file(i) > 1 and Board::get_rank(i) > 0 ? left_top_hors_c3 << -INDEX_SHIFT(i, c3) : 0b0;
-        } else {
-            array[i + piece_offset * 3] |= Board::get_file(i) < Board::SIZE -1 and Board::get_rank(i) < Board::SIZE -2 ? bottom_right_hors_c3 >> INDEX_SHIFT(i, c3) : 0b0;
-            array[i + piece_offset * 3] |= Board::get_file(i) > 0 and Board::get_rank(i) < Board::SIZE -2 ? bottom_left_hors_c3 >> INDEX_SHIFT(i, c3) : 0b0;
-            array[i + piece_offset * 3] |= Board::get_file(i) > 1 and Board::get_rank(i) < Board::SIZE -1 ? left_bottom_hors_c3 >> INDEX_SHIFT(i, c3) : 0b0;
-            array[i + piece_offset * 3] |= Board::get_file(i) > 1 and Board::get_rank(i) > 0 ? left_top_hors_c3 >> INDEX_SHIFT(i, c3) : 0b0;
-        }
+    for (uint8_t i = 0; i < piece_offset; ++i) {
+        array[i + piece_offset * 3] |= FILE(i) > 0 and RANK(i) > 1 ? SHIFT(top_left_hors_b2, i, b2) : 0b0;
+        array[i + piece_offset * 3] |= FILE(i) < Board::SIZE - 1 and RANK(i) > 1 ? SHIFT(top_right_hors_b2, i, b2) : 0b0;
+        array[i + piece_offset * 3] |= FILE(i) < Board::SIZE - 2 and RANK(i) > 0 ? SHIFT(right_top_hors_b2, i, b2) : 0b0;
+        array[i + piece_offset * 3] |= FILE(i) < Board::SIZE - 2 and RANK(i) < Board::SIZE - 1 ? SHIFT(right_bot_hors_b2, i, b2) : 0b0;
+        array[i + piece_offset * 3] |= FILE(i) < Board::SIZE - 1 and RANK(i) < Board::SIZE - 2 ? SHIFT(bot_right_hors_c3, i, c3) : 0b0;
+        array[i + piece_offset * 3] |= FILE(i) > 0 and RANK(i) < Board::SIZE - 2 ? SHIFT(bot_left_hors_c3, i, c3) : 0b0;
+        array[i + piece_offset * 3] |= FILE(i) > 1 and RANK(i) < Board::SIZE - 1 ? SHIFT(left_bot_hors_c3, i, c3) : 0b0;
+        array[i + piece_offset * 3] |= FILE(i) > 1 and RANK(i) > 0 ? SHIFT(left_top_hors_c3, i, c3) : 0b0;
     }
-
     // Fill 5th 16 with WAZIR
-    // assume it centered on b2
     constexpr uint16_t top_wazir_b2 = 0b0000'0100'0000'0000;
     constexpr uint16_t right_wazir_b2 = 0b0000'0000'0010'0000;
-    constexpr uint16_t bottom_wazir_b2 = 0b0000'0000'0000'0100;
+    constexpr uint16_t bot_wazir_b2 = 0b0000'0000'0000'0100;
     constexpr uint16_t left_wazir_b2 = 0b0000'0000'1000'0000;
-    for (uint8_t i = 0; i < 16; ++i) {
-        if (INDEX_SHIFT(i, b2) < 0) {
-            array[i + piece_offset * 4] |= Board::get_rank(i) > 0 ? top_wazir_b2 << -INDEX_SHIFT(i, b2) : 0b0;
-            array[i + piece_offset * 4] |= Board::get_file(i) < Board::SIZE -1 ? right_wazir_b2 << -INDEX_SHIFT(i, b2) : 0b0;
-            array[i + piece_offset * 4] |= Board::get_rank(i) < Board::SIZE -1 ? bottom_wazir_b2 << -INDEX_SHIFT(i, b2) : 0b0;
-            array[i + piece_offset * 4] |= Board::get_file(i) > 0 ? left_wazir_b2 << -INDEX_SHIFT(i, b2) : 0b0;
-        } else {
-            array[i + piece_offset * 4] |= Board::get_rank(i) > 0 ? top_wazir_b2 >> INDEX_SHIFT(i, b2) : 0b0;
-            array[i + piece_offset * 4] |= Board::get_file(i) < Board::SIZE -1 ? right_wazir_b2 >> INDEX_SHIFT(i, b2) : 0b0;
-            array[i + piece_offset * 4] |= Board::get_rank(i) < Board::SIZE -1 ? bottom_wazir_b2 >> INDEX_SHIFT(i, b2) : 0b0;
-            array[i + piece_offset * 4] |= Board::get_file(i) > 0 ? left_wazir_b2 >> INDEX_SHIFT(i, b2) : 0b0;
-        }
+    for (uint8_t i = 0; i < piece_offset; ++i) {
+        array[i + piece_offset * 4] |= RANK(i) > 0 ? SHIFT(top_wazir_b2, i, b2) : 0b0;
+        array[i + piece_offset * 4] |= FILE(i) < Board::SIZE - 1 ? SHIFT(right_wazir_b2, i, b2) : 0b0;
+        array[i + piece_offset * 4] |= RANK(i) < Board::SIZE - 1 ? SHIFT(bot_wazir_b2, i, b2) : 0b0;
+        array[i + piece_offset * 4] |= FILE(i) > 0 ? SHIFT(left_wazir_b2, i, b2) : 0b0;
     }
-
     // Fill 6th 16 with KING
-    // assume it centered on b2
     constexpr uint16_t top_left_king_b2 = 0b0000'1100'1000'0000;
-    constexpr uint16_t bottom_left_king_b2 = 0b0000'0000'1000'1100;
+    constexpr uint16_t bot_left_king_b2 = 0b0000'0000'1000'1100;
     constexpr uint16_t top_right_king_b2 = 0b0000'0110'0010'0000;
-    constexpr uint16_t bottom_right_king_b2 = 0b0000'0000'0010'0110;
-    for (uint8_t i = 0; i < 16; ++i) {
-        if (INDEX_SHIFT(i, b2) < 0) {
-            array[i + piece_offset * 5] |= Board::get_file(i) > 0 and Board::get_rank(i) > 0 ? top_left_king_b2 << -INDEX_SHIFT(i, b2) : 0b0;
-            array[i + piece_offset * 5] |= Board::get_file(i) > 0 and Board::get_rank(i) < Board::SIZE -1 ? bottom_left_king_b2 << -INDEX_SHIFT(i, b2) : 0b0;
-            array[i + piece_offset * 5] |= Board::get_file(i) < Board::SIZE -1 and Board::get_rank(i) > 0 ? top_right_king_b2 << -INDEX_SHIFT(i, b2) : 0b0;
-            array[i + piece_offset * 5] |= Board::get_file(i) < Board::SIZE -1 and Board::get_rank(i) < Board::SIZE -1 ? bottom_right_king_b2 << -INDEX_SHIFT(i, b2) : 0b0;
-        } else {
-            array[i + piece_offset * 5] |= Board::get_file(i) > 0 and Board::get_rank(i) > 0 ? top_left_king_b2 >> INDEX_SHIFT(i, b2) : 0b0;
-            array[i + piece_offset * 5] |= Board::get_file(i) > 0 and Board::get_rank(i) < Board::SIZE -1 ? bottom_left_king_b2 >> INDEX_SHIFT(i, b2) : 0b0;
-            array[i + piece_offset * 5] |= Board::get_file(i) < Board::SIZE -1 and Board::get_rank(i) > 0 ? top_right_king_b2 >> INDEX_SHIFT(i, b2) : 0b0;
-            array[i + piece_offset * 5] |= Board::get_file(i) < Board::SIZE -1 and Board::get_rank(i) < Board::SIZE -1 ? bottom_right_king_b2 >> INDEX_SHIFT(i, b2) : 0b0;
-        }
+    constexpr uint16_t bot_right_king_b2 = 0b0000'0000'0010'0110;
+    for (uint8_t i = 0; i < piece_offset; ++i) {
+        array[i + piece_offset * 5] |= FILE(i) > 0 and RANK(i) > 0 ? SHIFT(top_left_king_b2, i, b2) : 0b0;
+        array[i + piece_offset * 5] |= FILE(i) > 0 and RANK(i) < Board::SIZE - 1 ? SHIFT(bot_left_king_b2, i, b2) : 0b0;
+        array[i + piece_offset * 5] |= FILE(i) < Board::SIZE - 1 and RANK(i) > 0 ? SHIFT(top_right_king_b2, i, b2) : 0b0;
+        array[i + piece_offset * 5] |= FILE(i) < Board::SIZE - 1 and RANK(i) < Board::SIZE - 1 ? SHIFT(bot_right_king_b2, i, b2) : 0b0;
     }
     return array;
 }();
 
 #include <iostream>
-#include <bitset>
 
 void print_array() {
-    for(size_t i = 0; i < array.size(); ++i){
-        if(i == 16 * 3) std::cout << "HORS: ";
-        std::cout << "i: "<< i << ":\n";
-        auto map = array[i];
-        for(uint16_t mask = 0b1000000000000000; mask != 0; mask >>= 1) {
+    for (size_t i = 0; i < move_bitmasks.size(); ++i) {
+        if (i == 16 * 3) std::cout << "HORS: ";
+        std::cout << "i: " << i << ":\n";
+        auto map = move_bitmasks[i];
+        for (uint16_t mask = 0b1000000000000000; mask != 0; mask >>= 1) {
             if ((mask & map) != 0) {
                 std::cout << '#';
-            } else if (mask == (0b1 << (((16-i-1) % 16)))){
+            } else if (mask == (0b1 << (((16 - i - 1) % 16)))) {
                 std::cout << '+';
             } else {
                 std::cout << '.';
             }
             if ((mask == 0b10000) or (mask == 0b100000000) or (mask == 0b1000000000000)) std::cout << '\n';
         }
-        std::cout << "\n"; 
-        // std::bitset<16> bitmap{array[i]};
-        // std::cout <<bitmap << " - " << i <<"\n";
+        std::cout << "\n";
     }
 }
 

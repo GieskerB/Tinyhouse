@@ -29,6 +29,10 @@ class Board {
     void make_move(move move);
     void undo_move(move move);
 
+    uint16_t get_bitmap(piece piece, uint8_t color);
+    uint16_t get_bitmap(uint8_t color);
+    uint16_t get_bitmap();
+
     static constexpr uint8_t get_index(uint8_t rank, uint8_t file) {
         assert(rank < SIZE);
         assert(file < SIZE);
@@ -41,6 +45,10 @@ class Board {
     static constexpr uint8_t get_rank(uint8_t index) {
         assert(index < SIZE * SIZE);
         return index / SIZE;
+    }
+    static constexpr uint16_t index_to_bitmap(uint8_t index) {
+        assert(index < SIZE * SIZE);
+        return 0b1 << (index - 1);
     }
 };
 
