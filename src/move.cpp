@@ -10,6 +10,10 @@
 #define BSIZE Board::SIZE
 
 /**
+ * BITMAP ORDERING d1,c1,b1,a1'd2,c2,b2,a2'd3,c3,b3,a3'd4,c4,b4,a4'
+ */
+
+/**
  * List of all bitmaps for each piece on every tile to see where it can move / capture
  * Every 16 values build a group for one piece. Index 0 is top left and index 15 is bottom right
  * This is the list of the pieces to access
@@ -23,76 +27,61 @@
 constexpr auto possible_move_bitmap = [] {
     constexpr uint8_t size_sq = BSIZE * BSIZE;
     std::array<uint16_t, size_sq * 6> array{0};
-    // assume default bitmap is centered on b2 (or c3)
+    // assume king is positioned on b2 (or c3)
     constexpr int8_t b2 = 9, c3 = 6;
     // Fill 1st 16 slots with WHITE PAWN
-    constexpr uint16_t left_pawn_white_b2 = 0b0000'0000'0011'0000;
     constexpr uint16_t right_pawn_white_b2 = 0b0000'0000'0110'0000;
+    constexpr uint16_t left_pawn_white_b2 = 0b0000'0000'0011'0000;
     for (uint8_t i = 0; i < size_sq; ++i) {
         array[i + size_sq * 0] |= FILE(i) > 0 ? SHIFT(left_pawn_white_b2, i, b2) : 0b0;
         array[i + size_sq * 0] |= FILE(i) < BSIZE - 1 ? SHIFT(right_pawn_white_b2, i, b2) : 0b0;
     }
     // Fill 2nd 16 slots with BLACK PAWN
-    constexpr uint16_t left_pawn_black_b2 = 0b0011'0000'0000'0000;
     constexpr uint16_t right_pawn_black_b2 = 0b0110'0000'0000'0000;
+    constexpr uint16_t left_pawn_black_b2 = 0b0011'0000'0000'0000;
     for (uint8_t i = 0; i < size_sq; ++i) {
         array[i + size_sq * 1] |= FILE(i) > 0 ? SHIFT(left_pawn_black_b2, i, b2) : 0b0;
         array[i + size_sq * 1] |= FILE(i) < BSIZE - 1 ? SHIFT(right_pawn_black_b2, i, b2) : 0b0;
     }
     // Fill 3rd 16 slots with FERZ
-    constexpr uint16_t top_left_ferz_b2 = 0b0000'0000'0001'0000;
-    constexpr uint16_t bot_left_ferz_b2 = 0b0001'0000'0000'0000;
-    constexpr uint16_t top_right_ferz_b2 = 0b0000'0000'0100'0000;
-    constexpr uint16_t bot_right_ferz_b2 = 0b0100'0000'0000'0000;
+    constexpr uint16_t right_ferz_b2 = 0b0100'0000'0100'0000;
+    constexpr uint16_t left_ferz_b2 = 0b0001'0000'0001'0000;
     for (uint8_t i = 0; i < size_sq; ++i) {
-        array[i + size_sq * 2] |= FILE(i) > 0 and RANK(i) > 0 ? SHIFT(top_left_ferz_b2, i, b2) : 0b0;
-        array[i + size_sq * 2] |= FILE(i) > 0 and RANK(i) < BSIZE - 1 ? SHIFT(bot_left_ferz_b2, i, b2) : 0b0;
-        array[i + size_sq * 2] |= FILE(i) < BSIZE - 1 and RANK(i) > 0 ? SHIFT(top_right_ferz_b2, i, b2) : 0b0;
-        array[i + size_sq * 2] |= FILE(i) < BSIZE - 1 and RANK(i) < BSIZE - 1 ? SHIFT(bot_right_ferz_b2, i, b2) : 0b0;
+        array[i + size_sq * 2] |= FILE(i) > 0 ? SHIFT(left_ferz_b2, i, b2) : 0b0;
+        array[i + size_sq * 2] |= FILE(i) < BSIZE - 1 ? SHIFT(right_ferz_b2, i, b2) : 0b0;
     }
     // Fill 4th 16 slots with HORS
-    constexpr uint16_t top_left_hors_b2 = 0b0000'0000'0000'0001;
-    constexpr uint16_t top_right_hors_b2 = 0b0000'0000'0000'0100;
-    constexpr uint16_t right_top_hors_b2 = 0b0000'0000'1000'0000;
-    constexpr uint16_t right_bot_hors_b2 = 0b1000'0000'0000'0000;
-    constexpr uint16_t bot_right_hors_c3 = 0b1000'0000'0000'0000;
-    constexpr uint16_t bot_left_hors_c3 = 0b0010'0000'0000'0000;
-    constexpr uint16_t left_bot_hors_c3 = 0b0000'0001'0000'0000;
-    constexpr uint16_t left_top_hors_c3 = 0b0000'0000'0000'0001;
+    constexpr uint16_t right1_hors_b2 =  0b0000'0000'0000'0100;
+    constexpr uint16_t right2_hors_b2 =  0b1000'0000'1000'0100;
+    constexpr uint16_t left_hors_b2 =  0b0000'0000'0000'0001;
+    constexpr uint16_t right_hors_c3 =   0b1000'0000'0000'0000;
+    constexpr uint16_t left1_hors_c3 = 0b0010'0000'0000'0000;
+    constexpr uint16_t left2_hors_c3 = 0b0010'0001'0000'0001;
     for (uint8_t i = 0; i < size_sq; ++i) {
-        array[i + size_sq * 3] |= FILE(i) > 0 and RANK(i) > 1 ? SHIFT(top_left_hors_b2, i, b2) : 0b0;
-        array[i + size_sq * 3] |= FILE(i) < BSIZE - 1 and RANK(i) > 1 ? SHIFT(top_right_hors_b2, i, b2) : 0b0;
-        array[i + size_sq * 3] |= FILE(i) < BSIZE - 2 and RANK(i) > 0 ? SHIFT(right_top_hors_b2, i, b2) : 0b0;
-        array[i + size_sq * 3] |= FILE(i) < BSIZE - 2 and RANK(i) < BSIZE - 1 ? SHIFT(right_bot_hors_b2, i, b2) : 0b0;
-        array[i + size_sq * 3] |= FILE(i) < BSIZE - 1 and RANK(i) < BSIZE - 2 ? SHIFT(bot_right_hors_c3, i, c3) : 0b0;
-        array[i + size_sq * 3] |= FILE(i) > 0 and RANK(i) < BSIZE - 2 ? SHIFT(bot_left_hors_c3, i, c3) : 0b0;
-        array[i + size_sq * 3] |= FILE(i) > 1 and RANK(i) < BSIZE - 1 ? SHIFT(left_bot_hors_c3, i, c3) : 0b0;
-        array[i + size_sq * 3] |= FILE(i) > 1 and RANK(i) > 0 ? SHIFT(left_top_hors_c3, i, c3) : 0b0;
+        array[i + size_sq * 3] |= FILE(i) < BSIZE - 1 ? SHIFT(right1_hors_b2, i, b2) : 0b0;
+        array[i + size_sq * 3] |= FILE(i) < BSIZE - 2 ? SHIFT(right2_hors_b2, i, b2) : 0b0;
+        array[i + size_sq * 3] |= FILE(i) > 0 ? SHIFT(left_hors_b2, i, b2) : 0b0;
+        array[i + size_sq * 3] |= FILE(i) < BSIZE -1 ? SHIFT(right_hors_c3, i, c3) : 0b0;
+        array[i + size_sq * 3] |= FILE(i) > 0  ? SHIFT(left1_hors_c3, i, c3) : 0b0;
+        array[i + size_sq * 3] |= FILE(i) > 1  ? SHIFT(left2_hors_c3, i, c3) : 0b0;
     }
     // Fill 5th 16 slots with WAZIR
-    constexpr uint16_t top_wazir_b2 = 0b0000'0000'0010'0000;
-    constexpr uint16_t right_wazir_b2 = 0b0000'0100'0000'0000;
-    constexpr uint16_t bot_wazir_b2 = 0b0010'0000'0000'0000;
-    constexpr uint16_t left_wazir_b2 = 0b0000'0001'0000'0000;
+    constexpr uint16_t right_wazir_b2 = 0b0010'0100'0010'0000;
+    constexpr uint16_t left_wazir_b2 = 0b0010'0001'0010'0000;
     for (uint8_t i = 0; i < size_sq; ++i) {
-        array[i + size_sq * 4] |= RANK(i) > 0 ? SHIFT(top_wazir_b2, i, b2) : 0b0;
-        array[i + size_sq * 4] |= FILE(i) < BSIZE - 1 ? SHIFT(right_wazir_b2, i, b2) : 0b0;
-        array[i + size_sq * 4] |= RANK(i) < BSIZE - 1 ? SHIFT(bot_wazir_b2, i, b2) : 0b0;
         array[i + size_sq * 4] |= FILE(i) > 0 ? SHIFT(left_wazir_b2, i, b2) : 0b0;
+        array[i + size_sq * 4] |= FILE(i) < BSIZE - 1 ? SHIFT(right_wazir_b2, i, b2) : 0b0;
     }
     // Fill 6th 16 slots with KING
-    constexpr uint16_t top_left_king_b2 = 0b0000'0001'0011'0000;
-    constexpr uint16_t bot_left_king_b2 = 0b0011'0001'0000'0000;
-    constexpr uint16_t top_right_king_b2 = 0b0000'0100'0110'0000;
-    constexpr uint16_t bot_right_king_b2 = 0b0110'0100'0000'0000;
+    constexpr uint16_t right_king_b2 = 0b0110'0100'0110'0000;
+    constexpr uint16_t left_king_b2 = 0b0011'0001'0011'0000;
     for (uint8_t i = 0; i < size_sq; ++i) {
-        array[i + size_sq * 5] |= FILE(i) > 0 and RANK(i) > 0 ? SHIFT(top_left_king_b2, i, b2) : 0b0;
-        array[i + size_sq * 5] |= FILE(i) > 0 and RANK(i) < BSIZE - 1 ? SHIFT(bot_left_king_b2, i, b2) : 0b0;
-        array[i + size_sq * 5] |= FILE(i) < BSIZE - 1 and RANK(i) > 0 ? SHIFT(top_right_king_b2, i, b2) : 0b0;
-        array[i + size_sq * 5] |= FILE(i) < BSIZE - 1 and RANK(i) < BSIZE - 1 ? SHIFT(bot_right_king_b2, i, b2) : 0b0;
+        array[i + size_sq * 5] |= FILE(i) > 0 ? SHIFT(left_king_b2, i, b2) : 0b0;
+        array[i + size_sq * 5] |= FILE(i) < BSIZE - 1 ? SHIFT(right_king_b2, i, b2) : 0b0;
     }
     return array;
 }();
+
 
 static uint8_t to_bitmap_index(piece piece, uint8_t piece_index) {
     uint8_t offset = 0;
@@ -156,6 +145,13 @@ static uint16_t valid_hors_move_offset(const Board& board, uint8_t piece_index, 
     return bitmap;
 }
 
+uint16_t direct_check_check(const Board& board, uint8_t piece_index, uint16_t bitmap) {
+    const piece piece = board.get_piece(piece_index);
+    if((piece & ID_MASK) == KING) return bitmap;
+    // const uint8_t king_index = board.find_king(piece & COLOR_MASK);
+    return bitmap;
+}
+
 uint16_t valid_move_bitmap(const Board& board, uint8_t piece_index) {
     // Get all possible moves
     const piece piece = board.get_piece(piece_index);
@@ -174,11 +170,23 @@ uint16_t valid_move_bitmap(const Board& board, uint8_t piece_index) {
     return valid_moves;
 }
 
+static move make_move(uint16_t destination, uint16_t source) {
+    return (destination << 4) | source;
+}
+
+
 std::vector<move> valid_moves(const Board& board, uint8_t piece_index) {
     std::vector<move> moves;
-    board.get_piece(piece_index);
-    // const piece piece = board.get_piece(piece_index);
-    // const uint16_t move_bitmap = valid_move_bitmap(board, piece_index);
+    // board.get_piece(piece_index);
+    const uint16_t move_bitmap = valid_move_bitmap(board, piece_index);
+
+    uint16_t current_bitmap = 0b1;
+    for(uint8_t i = 0; i< 16; ++i) {
+        if((current_bitmap & move_bitmap) != 0) {
+            moves.push_back(make_move(i, piece_index));
+        }
+        current_bitmap <<= 1;
+    }
 
     return moves;
 }

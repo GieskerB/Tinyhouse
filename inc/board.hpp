@@ -24,10 +24,12 @@ class Board {
 
     void overwrite(piece piece, uint8_t index);
 
-    piece get_piece(uint8_t index) const;
-
     void make_move(move move);
     void undo_move(move move);
+
+    piece get_piece(uint8_t index) const;
+
+    uint8_t find_king(uint8_t color) const;
 
     uint16_t get_bitmap(piece piece, uint8_t color) const;
     uint16_t get_bitmap(uint8_t color) const;

@@ -1,13 +1,22 @@
 #include "../inc/board.hpp"
 
 void Board::overwrite(piece p, uint8_t index) {
-    assert(index < SIZE * SIZE);
+    assert(index < Board::SIZE * Board::SIZE);
     board[index] = p;
 }
 
 piece Board::get_piece(uint8_t index) const {
-    assert(index < SIZE * SIZE);
+    assert(index < Board::SIZE * Board::SIZE);
     return board[index];
+}
+
+uint8_t Board::find_king(uint8_t color) const {
+    assert(color == WHITE or color == BLACK);
+    const piece king = KING | color;
+    for(uint8_t i = 0; i < Board::SIZE * Board::SIZE; ++i) {
+        if(board[i] == king) return i;
+    }
+    return -1;
 }
 
 uint16_t Board::get_bitmap(piece piece, uint8_t color) const{
