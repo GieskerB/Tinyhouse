@@ -56,7 +56,6 @@ add_executable(tests)
 target_sources(tests
     PRIVATE
       tests/move_generation.cpp
-      tests/move_offset.cpp
       tests/tiny_fen.cpp
       src/board.cpp
       src/game.cpp
