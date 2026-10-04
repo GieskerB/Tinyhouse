@@ -20,7 +20,7 @@ constexpr uint16_t CAPTURE = 0b001000000000;
 constexpr uint16_t PROMOTION = 0b010000000000;
 constexpr uint16_t CHECK = 0b100000000000;
 
-uint16_t valid_move_bitmap(const Board& board, uint8_t piece_index);
-std::vector<move> valid_moves(const Board& board, uint8_t piece_index);
+uint16_t pseudo_legal_move_bitmap(const Board& board, uint8_t piece_index);
+std::vector<move> legal_moves(const Board& board, uint8_t piece_index);
 
 #endif

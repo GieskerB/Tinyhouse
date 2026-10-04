@@ -33,7 +33,7 @@ void GameManager::loop() {
                     // board.select_piece(Board::get_index(rank, file));
                     // house.unselect();
 
-                    for (const auto& var : valid_moves(board, Board::get_index(rank, file))) {
+                    for (const auto& var : legal_moves(board, Board::get_index(rank, file))) {
                         std::cout << +var << "  ";
                     }
                     std::cout << "\n";

@@ -12,11 +12,11 @@
 int main() {
     Game game{};
 
-    valid_moves(game.board(),0);
+    legal_moves(game.board(),0);
 
     // for(uint8_t i= 0; i< 16; ++i){
     //     std::cout << "Piece: " << +i << "\n";
-    //     auto map = valid_move_bitmap(game.board(), i);
+    //     auto map = pseudo_legal_move_bitmap(game.board(), i);
     //     for (uint16_t mask = 0b1; mask != 0; mask <<= 1) {
     //         if ((mask & map) != 0) {
     //             std::cout << '#';
