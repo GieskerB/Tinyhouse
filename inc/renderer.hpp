@@ -13,6 +13,9 @@ constexpr float TILE_SIZE = BOARD_SIZE / Board::SIZE;
 
 void init_renderer();
 
+void clear_highlighted();
+void set_highlighted(uint8_t);
+
 void render_board(const Board&);
 void render_house(const House&);
 

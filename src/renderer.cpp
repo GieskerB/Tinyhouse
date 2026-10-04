@@ -4,6 +4,7 @@
 #include <SDL3/SDL_pixels.h>
 
 #include <iostream>
+#include <algorithm>
 
 #include "../inc/piece.hpp"
 
@@ -23,6 +24,8 @@ constexpr SDL_Color HOUSE_SELECTED_COLOR{200, 210, 220, 255};
 constexpr SDL_Color LINE_COLOR{15, 10, 5, 255};
 
 static std::array<SDL_Texture*, 10> textures{nullptr};
+
+static std::vector<uint8_t> highlighted_tiles;
 
 static inline void init_SDL() {
     if (!SDL_Init(SDL_INIT_VIDEO)) {
@@ -64,14 +67,27 @@ void init_renderer() {
     load_pieces();
 }
 
+void clear_highlighted() {
+    highlighted_tiles.clear();
+}
+
+void set_highlighted(uint8_t new_tile) {
+    highlighted_tiles.push_back(new_tile);
+}
+
+static bool is_highlighted(uint8_t tile) {
+    const auto iter = find(highlighted_tiles.begin(), highlighted_tiles.end(), tile);
+    return iter != highlighted_tiles.end();
+}
+
 void render_board(const Board& board) {
     // Render Board background
     for (unsigned char rank = 0; rank < Board::SIZE; ++rank) {
         for (unsigned char file = 0; file < Board::SIZE; ++file) {
-            // const auto& selected_color = (file + rank) % 2 == 0 ? LIGHT_TILE_SELECTED_COLOR : DARK_TILE_SELECTED_COLOR;
+            const auto& selected_color = (file + rank) % 2 == 0 ? LIGHT_TILE_SELECTED_COLOR : DARK_TILE_SELECTED_COLOR;
             const auto& color = (file + rank) % 2 == 0 ? LIGHT_TILE_COLOR : DARK_TILE_COLOR;
-            SET_COLOR(color);
-            // SET_COLOR(board.is_highlighted(Board::get_index(rank, file)) ? selected_color : color);
+            // SET_COLOR(color);
+            SET_COLOR(is_highlighted(Board::get_index(rank, file)) ? selected_color : color);
             const SDL_FRect tile{file * TILE_SIZE + HOUSE_SIZE, rank * TILE_SIZE, TILE_SIZE, TILE_SIZE};
             SDL_RenderFillRect(renderer, &tile);
         }

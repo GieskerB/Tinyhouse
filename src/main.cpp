@@ -10,9 +10,16 @@
 // Rank = row
 
 int main() {
-    Game game{};
 
-    legal_moves(game.board(),0);
+    GameManager gm;
+
+    gm.init();
+    gm.loop();
+    gm.close();
+
+    // Game game{};
+
+    // legal_moves(game.board(),0);
 
     // for(uint8_t i= 0; i< 16; ++i){
     //     std::cout << "Piece: " << +i << "\n";

@@ -1,18 +1,18 @@
 #ifndef GAME_MANAGER_HPP
 #define GAME_MANAGER_HPP
 
-#include "board.hpp"
-#include "house.hpp"
-
+#include "game.hpp"
 class GameManager {
-    Board board;
-    House house;
+    Game m_game;
 
    public:
+    GameManager();
+    GameManager(std::string tiny_fen);
+
+    inline const Game& game() const {return m_game;}
+
     void init();
-
     void loop();
-
     void close();
 };
 

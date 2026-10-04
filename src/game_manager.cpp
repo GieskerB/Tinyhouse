@@ -6,6 +6,9 @@
 
 #include "../inc/renderer.hpp"
 
+GameManager::GameManager(): m_game() {};
+GameManager::GameManager(std::string tiny_fen): m_game(tiny_fen) {};
+
 void GameManager::init() { init_renderer(); }
 
 void GameManager::loop() {
@@ -25,23 +28,22 @@ void GameManager::loop() {
                 const float mouse_y = event.button.y;
                 if (mouse_x < HOUSE_SIZE) {
                     // const int8_t house_index = static_cast<int>(mouse_y / HEIGHT * House::HOUSE_SIZE);
-                    // house.select(house_index);
-                    // board.unselect_piece();
+
                 } else {
                     const int8_t rank = static_cast<int8_t>(mouse_y / HEIGHT * Board::SIZE);
                     const int8_t file = static_cast<int8_t>((mouse_x - HOUSE_SIZE) / BOARD_SIZE * Board::SIZE);
-                    // board.select_piece(Board::get_index(rank, file));
-                    // house.unselect();
-
-                    for (const auto& var : legal_moves(board, Board::get_index(rank, file))) {
-                        std::cout << +var << "  ";
+                    clear_highlighted();
+                    for (const auto& move : legal_moves(m_game.board(), Board::get_index(rank, file))) {
+                        const uint8_t source = move & 0b1111;
+                        set_highlighted(source);
+                        const uint8_t destination = (move & 0b11110000) >> 4;
+                        set_highlighted(destination);
                     }
-                    std::cout << "\n";
                 }
             }
         }
-        render_board(board);
-        render_house(house);
+        render_board(m_game.board());
+        render_house(m_game.house());
         SDL_Delay(100);
     }
 }
