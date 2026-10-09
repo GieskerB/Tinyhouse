@@ -16,7 +16,7 @@ typedef uint32_t move;
 #include "board.hpp"
 
 constexpr uint16_t FROM_HOUSE = 0b000100000000;
-constexpr uint16_t CAPTURE = 0b001000000000;
+constexpr uint16_t CAPTURE_FLAG = 0b001000000000;
 constexpr uint16_t PROMOTION = 0b010000000000;
 constexpr uint16_t CHECK = 0b100000000000;
 

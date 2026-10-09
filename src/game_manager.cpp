@@ -6,10 +6,46 @@
 
 #include "../inc/renderer.hpp"
 
-GameManager::GameManager(): m_game() {};
-GameManager::GameManager(std::string tiny_fen): m_game(tiny_fen) {};
+GameManager::GameManager() : m_game(), m_selected_index(-1) {};
+GameManager::GameManager(std::string tiny_fen) : m_game(tiny_fen), m_selected_index(-1) {};
 
 void GameManager::init() { init_renderer(); }
+
+void GameManager::handle_board_click(uint8_t rank, uint8_t file) {
+    const uint8_t current_index = Board::get_index(rank, file);
+    const uint8_t current_piece_color = m_game.board().get_piece(current_index) & COLOR_MASK;
+    const bool prev_selected = m_selected_index != static_cast<uint8_t>(-1);
+
+    if (!prev_selected) {
+        // currently nothing selected:
+        // cant select piece of opposing color first
+        if (m_game.is_whites_turn() and current_piece_color == BLACK) return;
+        if (!m_game.is_whites_turn() and current_piece_color == WHITE) return;
+    }
+
+    // Selected a target tile for the moves of the selected piece: Make that move
+    auto possible_moves = prev_selected ? legal_moves(m_game.board(), m_selected_index) : std::vector<move>{};
+    for (const auto& move : possible_moves) {
+        if ((move & 0b11110000) >> 4 == current_index) {
+            m_game.make_move(move);
+            clear_highlighted();
+            m_selected_index = -1;
+            return;
+        }
+    }
+    // if not selecting another of you own pieces, unselect the last one
+    clear_highlighted();
+    m_selected_index = -1;
+    if (m_game.is_whites_turn() and current_piece_color != WHITE) return;
+    if (!m_game.is_whites_turn() and current_piece_color != BLACK) return;
+
+    // at this point the player selected another of their own pieces: update selection
+    possible_moves = legal_moves(m_game.board(), current_index);
+    for (const auto& move : possible_moves) {
+        highlight_move(move);
+    }
+    m_selected_index = current_index;
+}
 
 void GameManager::loop() {
     bool running = true;
@@ -32,13 +68,7 @@ void GameManager::loop() {
                 } else {
                     const int8_t rank = static_cast<int8_t>(mouse_y / HEIGHT * Board::SIZE);
                     const int8_t file = static_cast<int8_t>((mouse_x - HOUSE_SIZE) / BOARD_SIZE * Board::SIZE);
-                    clear_highlighted();
-                    for (const auto& move : legal_moves(m_game.board(), Board::get_index(rank, file))) {
-                        const uint8_t source = move & 0b1111;
-                        set_highlighted(source);
-                        const uint8_t destination = (move & 0b11110000) >> 4;
-                        set_highlighted(destination);
-                    }
+                    handle_board_click(rank, file);
                 }
             }
         }

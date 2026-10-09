@@ -11,6 +11,13 @@
 static SDL_Window* window = nullptr;
 static SDL_Renderer* renderer = nullptr;
 
+enum Highlight {
+    NONE,
+    SELECT,
+    MOVE,
+    CAPTURE,
+};
+
 static inline bool SET_COLOR(const SDL_Color& color) {
     return SDL_SetRenderDrawColor(renderer, color.r, color.g, color.b, color.a);
 }
@@ -23,9 +30,9 @@ constexpr SDL_Color HOUSE_COLOR{220, 210, 200, 255};
 constexpr SDL_Color HOUSE_SELECTED_COLOR{200, 210, 220, 255};
 constexpr SDL_Color LINE_COLOR{15, 10, 5, 255};
 
-static std::array<SDL_Texture*, 10> textures{nullptr};
+static std::array<SDL_Texture*, 12> textures{nullptr};
 
-static std::vector<uint8_t> highlighted_tiles;
+static std::array<Highlight, Board::SIZE * Board::SIZE> highlighted {Highlight::NONE};
 
 static inline void init_SDL() {
     if (!SDL_Init(SDL_INIT_VIDEO)) {
@@ -60,6 +67,9 @@ static void load_pieces() {
     create_texture("assets/Black_King.png", const_piece::black_king);
     create_texture("assets/Black_Pawn.png", const_piece::black_pawn);
     create_texture("assets/Black_Wazir.png", const_piece::black_wazir);
+
+    create_texture("assets/Dot.png",const_piece::overlay_dot);
+    create_texture("assets/Ring.png",const_piece::overlay_circle);
 }
 
 void init_renderer() {
@@ -68,26 +78,31 @@ void init_renderer() {
 }
 
 void clear_highlighted() {
-    highlighted_tiles.clear();
+    for(uint8_t i = 0; i < highlighted.size(); ++i) {
+        highlighted[i] = Highlight::NONE;
+    }
 }
 
-void set_highlighted(uint8_t new_tile) {
-    highlighted_tiles.push_back(new_tile);
-}
-
-static bool is_highlighted(uint8_t tile) {
-    const auto iter = find(highlighted_tiles.begin(), highlighted_tiles.end(), tile);
-    return iter != highlighted_tiles.end();
+void highlight_move(move move) {
+    const uint8_t source = move & 0b1111;
+    const uint8_t destination = (move & 0b11110000) >> 4;
+    const bool capture = (move & CAPTURE_FLAG) != 0;
+    assert (source < highlighted.size());
+    highlighted[source] = Highlight::SELECT;
+    assert (destination < highlighted.size());
+    highlighted[destination] = capture ? Highlight::CAPTURE : Highlight::MOVE;
 }
 
 void render_board(const Board& board) {
     // Render Board background
     for (unsigned char rank = 0; rank < Board::SIZE; ++rank) {
         for (unsigned char file = 0; file < Board::SIZE; ++file) {
-            const auto& selected_color = (file + rank) % 2 == 0 ? LIGHT_TILE_SELECTED_COLOR : DARK_TILE_SELECTED_COLOR;
+            const auto& select_color = (file + rank) % 2 == 0 ? LIGHT_TILE_SELECTED_COLOR : DARK_TILE_SELECTED_COLOR;
             const auto& color = (file + rank) % 2 == 0 ? LIGHT_TILE_COLOR : DARK_TILE_COLOR;
-            // SET_COLOR(color);
-            SET_COLOR(is_highlighted(Board::get_index(rank, file)) ? selected_color : color);
+
+            const Highlight highlight = highlighted[Board::get_index(rank,file)];
+            SET_COLOR(highlight == Highlight::SELECT ? select_color : color);
+
             const SDL_FRect tile{file * TILE_SIZE + HOUSE_SIZE, rank * TILE_SIZE, TILE_SIZE, TILE_SIZE};
             SDL_RenderFillRect(renderer, &tile);
         }
@@ -100,6 +115,19 @@ void render_board(const Board& board) {
             if (p == const_piece::null_piece) continue;
             const SDL_FRect place{file * TILE_SIZE + HOUSE_SIZE, rank * TILE_SIZE, TILE_SIZE, TILE_SIZE};
             SDL_RenderTexture(renderer, textures[PIECE_INDEX(p)], NULL, &place);
+        }
+    }
+
+    // Render overlay ontop of that!
+    for (uint8_t rank = 0; rank < Board::SIZE; ++rank) {
+        for (uint8_t file = 0; file < Board::SIZE; ++file) {
+            const Highlight highlight = highlighted[Board::get_index(rank,file)];
+            if ((highlight == Highlight::NONE) or (highlight == Highlight::SELECT)) continue;
+
+            const SDL_FRect place{file * TILE_SIZE + HOUSE_SIZE, rank * TILE_SIZE, TILE_SIZE, TILE_SIZE};
+
+            const piece dummy_piece = highlight == Highlight::MOVE ? const_piece::overlay_dot : const_piece::overlay_circle;
+            SDL_RenderTexture(renderer, textures[PIECE_INDEX(dummy_piece)], NULL, &place);
         }
     }
 

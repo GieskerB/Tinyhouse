@@ -270,3 +270,23 @@ Game::Game(std::string tiny_fen) {
         break;
     }
 }
+
+void Game::make_move(move move) {
+    const uint8_t source = move &                                 0b1111;
+    const uint8_t destination = (move &                      0b1111'0000) >> 4;
+    const uint16_t flags = (move &                      0b1111'0000'0000);
+    const piece captured_piece = (move &        0b11'1111'0000'0000'0000) >> 12;
+    // const piece promoted_piece = (move & 0b1111'1100'0000'0000'0000'0000) >> 18;
+    assert(!((FROM_HOUSE & flags )== 0) or (m_board.get_piece(source) != const_piece::null_piece));
+    assert(!((FROM_HOUSE & flags) != 0) or (m_board.get_piece(source) == const_piece::null_piece));
+    assert(!((CAPTURE_FLAG & flags) != 0) or (m_board.get_piece(destination) != const_piece::null_piece));
+    assert(!((CAPTURE_FLAG & flags) != 0) or (m_board.get_piece(destination) == captured_piece));
+    if ((CAPTURE_FLAG & flags) != 0)  {
+        // if capture occurred, remove piece (implicit) from board, recolor and put in house.
+        m_house.push(captured_piece ^ COLOR_MASK);
+    }
+    // move piece from source to destination
+    m_board.make_move(source, destination);
+
+    m_is_whites_turn = ! m_is_whites_turn;
+}

@@ -5,6 +5,15 @@ void Board::overwrite(piece p, uint8_t index) {
     board[index] = p;
 }
 
+void Board::make_move(uint8_t from, uint8_t to) {
+    assert(from < Board::SIZE * Board::SIZE);
+    assert(to < Board::SIZE * Board::SIZE);
+    assert(from != to);
+    assert(get_piece(from) != const_piece::null_piece);
+    board[to] = board[from];
+    board[from] = const_piece::null_piece;
+}
+
 piece Board::get_piece(uint8_t index) const {
     assert(index < Board::SIZE * Board::SIZE);
     return board[index];

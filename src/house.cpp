@@ -1,9 +1,12 @@
 #include "../inc/house.hpp"
 
+#include <iostream>
+
 void House::push(piece p) {
     uint8_t index = piece_to_index(p);
     assert(m_house[index] == 0 or m_house[index] == 1);
     ++m_house[index];
+    std::cout << "PUSH\n";
 }
 
 piece House::pop(uint8_t index) {

@@ -5,6 +5,10 @@
 class GameManager {
     Game m_game;
 
+    uint8_t m_selected_index;
+
+    void handle_board_click(uint8_t rank, uint8_t file);
+
    public:
     GameManager();
     GameManager(std::string tiny_fen);

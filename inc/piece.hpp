@@ -24,6 +24,10 @@ constexpr uint8_t ID_MASK = 0b00111, COLOR_MASK = 0b11000, PIECE_MASK = ID_MASK 
 constexpr uint8_t PROMOTED = 0b100000;
 
 inline uint8_t PIECE_INDEX(piece p) {
+    // TODO: Dirty fix FIX
+    if(p == 0b1000000) return 10;
+    if(p == 0b10000000) return 11;
+
     const uint8_t piece_index = (p & ID_MASK);
     const uint8_t color_index = (p & COLOR_MASK);
     const uint8_t index = piece_index | ((color_index & BLACK) >> 1);
@@ -45,6 +49,10 @@ static constexpr piece black_hors = HORS | BLACK;
 static constexpr piece black_wazir = WAZIR | BLACK;
 static constexpr piece black_pawn = PAWN | BLACK;
 static constexpr piece black_king = KING | BLACK;
+
+// dirty fix for PIECE_INDEX function...
+static constexpr piece overlay_dot = 0b1000000;
+static constexpr piece overlay_circle = 0b10000000;
 }  // namespace const_piece
 
 #endif

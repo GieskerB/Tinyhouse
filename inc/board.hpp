@@ -24,8 +24,7 @@ class Board {
 
     void overwrite(piece piece, uint8_t index);
 
-    void make_move(move move);
-    void undo_move(move move);
+    void make_move(uint8_t from, uint8_t to);
 
     piece get_piece(uint8_t index) const;
 
