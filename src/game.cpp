@@ -93,35 +93,35 @@ Game::Game(std::string tiny_fen) {
                     }
                     continue;
                 case 'p':
-                    m_house.push(const_piece::black_pawn);
+                    m_house.push(piece::black_pawn);
                     ++pawn_count;
                     continue;
                 case 'P':
-                    m_house.push(const_piece::white_pawn);
+                    m_house.push(piece::white_pawn);
                     ++pawn_count;
                     continue;
                 case 'f':
-                    m_house.push(const_piece::black_ferz);
+                    m_house.push(piece::black_ferz);
                     ++ferz_count;
                     continue;
                 case 'F':
-                    m_house.push(const_piece::white_ferz);
+                    m_house.push(piece::white_ferz);
                     ++ferz_count;
                     continue;
                 case 'h':
-                    m_house.push(const_piece::black_hors);
+                    m_house.push(piece::black_hors);
                     ++hors_count;
                     continue;
                 case 'H':
-                    m_house.push(const_piece::white_hors);
+                    m_house.push(piece::white_hors);
                     ++hors_count;
                     continue;
                 case 'w':
-                    m_house.push(const_piece::black_wazir);
+                    m_house.push(piece::black_wazir);
                     ++wazir_count;
                     continue;
                 case 'W':
-                    m_house.push(const_piece::white_wazir);
+                    m_house.push(piece::white_wazir);
                     ++wazir_count;
                     continue;
                 default:
@@ -143,43 +143,43 @@ Game::Game(std::string tiny_fen) {
                     file = 0;
                     continue;
                 case 'p':
-                    m_board.overwrite(const_piece::black_pawn, Board::get_index(rank, file++));
+                    m_board.overwrite(piece::black_pawn, Board::get_index(rank, file++));
                     ++pawn_count;
                     continue;
                 case 'P':
-                    m_board.overwrite(const_piece::white_pawn, Board::get_index(rank, file++));
+                    m_board.overwrite(piece::white_pawn, Board::get_index(rank, file++));
                     ++pawn_count;
                     continue;
                 case 'f':
-                    m_board.overwrite(const_piece::black_ferz, Board::get_index(rank, file++));
+                    m_board.overwrite(piece::black_ferz, Board::get_index(rank, file++));
                     ++ferz_count;
                     continue;
                 case 'F':
-                    m_board.overwrite(const_piece::white_ferz, Board::get_index(rank, file++));
+                    m_board.overwrite(piece::white_ferz, Board::get_index(rank, file++));
                     ++ferz_count;
                     continue;
                 case 'h':
-                    m_board.overwrite(const_piece::black_hors, Board::get_index(rank, file++));
+                    m_board.overwrite(piece::black_hors, Board::get_index(rank, file++));
                     ++hors_count;
                     continue;
                 case 'H':
-                    m_board.overwrite(const_piece::white_hors, Board::get_index(rank, file++));
+                    m_board.overwrite(piece::white_hors, Board::get_index(rank, file++));
                     ++hors_count;
                     continue;
                 case 'w':
-                    m_board.overwrite(const_piece::black_wazir, Board::get_index(rank, file++));
+                    m_board.overwrite(piece::black_wazir, Board::get_index(rank, file++));
                     ++wazir_count;
                     continue;
                 case 'W':
-                    m_board.overwrite(const_piece::white_wazir, Board::get_index(rank, file++));
+                    m_board.overwrite(piece::white_wazir, Board::get_index(rank, file++));
                     ++wazir_count;
                     continue;
                 case 'k':
-                    m_board.overwrite(const_piece::black_king, Board::get_index(rank, file++));
+                    m_board.overwrite(piece::black_king, Board::get_index(rank, file++));
                     ++king_count;
                     continue;
                 case 'K':
-                    m_board.overwrite(const_piece::white_king, Board::get_index(rank, file++));
+                    m_board.overwrite(piece::white_king, Board::get_index(rank, file++));
                     // use 16 here to efficiently count black and white kings in one variable
                     king_count += 16;
                     continue;
@@ -188,7 +188,7 @@ Game::Game(std::string tiny_fen) {
                 case '3':
                 case '4':
                     for (uint8_t j = 0; j < c - '0'; ++j) {
-                        m_board.overwrite(const_piece::null_piece, Board::get_index(rank, file++));
+                        m_board.overwrite(piece::null, Board::get_index(rank, file++));
                     }
                     if (file > 4) throw_number_error("A Rank has too much files! It should be", Board::SIZE);
                     continue;
@@ -241,8 +241,9 @@ Game::Game(std::string tiny_fen) {
                     if (tiny_fen[i + 1] < '1' or tiny_fen[i + 1] > '4')
                         throw_character_error("Promotion location incorrect (example: 'a3')", "1/2/3/4", c);
                     temp = Board::get_index(Board::SIZE - (tiny_fen[i + 1] - '0'), tiny_fen[i] - 'a');
-                    if ((m_board.get_piece(temp) & KING) != 0) throw_general_error("Can not promote the king");
-                    m_board.overwrite(m_board.get_piece(temp) | PROMOTED, temp);
+                    if ((m_board.get_piece(temp) & piece::id::KING) != 0)
+                        throw_general_error("Can not promote the king");
+                    m_board.overwrite(m_board.get_piece(temp) | piece::flag::PROMOTED, temp);
                     if ((++promotion_count + pawn_count) > 2)
                         throw_general_error("Only two pawns (max) can be promoted!");
                     if (tiny_fen[i + 2] != ' ')
@@ -271,22 +272,22 @@ Game::Game(std::string tiny_fen) {
     }
 }
 
-void Game::make_move(move move) {
-    const uint8_t source = move &                                 0b1111;
-    const uint8_t destination = (move &                      0b1111'0000) >> 4;
-    const uint16_t flags = (move &                      0b1111'0000'0000);
-    const piece captured_piece = (move &        0b11'1111'0000'0000'0000) >> 12;
+void Game::make_move(move_t move) {
+    const uint8_t source = move & 0b1111;
+    const uint8_t destination = (move & 0b1111'0000) >> 4;
+    const uint16_t flags = (move & 0b1111'0000'0000);
+    const piece_t captured_piece = (move & 0b11'1111'0000'0000'0000) >> 12;
     // const piece promoted_piece = (move & 0b1111'1100'0000'0000'0000'0000) >> 18;
-    assert(!((FROM_HOUSE & flags )== 0) or (m_board.get_piece(source) != const_piece::null_piece));
-    assert(!((FROM_HOUSE & flags) != 0) or (m_board.get_piece(source) == const_piece::null_piece));
-    assert(!((CAPTURE_FLAG & flags) != 0) or (m_board.get_piece(destination) != const_piece::null_piece));
-    assert(!((CAPTURE_FLAG & flags) != 0) or (m_board.get_piece(destination) == captured_piece));
-    if ((CAPTURE_FLAG & flags) != 0)  {
+    assert(!((move::flag::FROM_HOUSE & flags) == 0) or (m_board.get_piece(source) != piece::null));
+    assert(!((move::flag::FROM_HOUSE & flags) != 0) or (m_board.get_piece(source) == piece::null));
+    assert(!((move::flag::CAPTURE & flags) != 0) or (m_board.get_piece(destination) != piece::null));
+    assert(!((move::flag::CAPTURE & flags) != 0) or (m_board.get_piece(destination) == captured_piece));
+    if ((move::flag::CAPTURE & flags) != 0) {
         // if capture occurred, remove piece (implicit) from board, recolor and put in house.
-        m_house.push(captured_piece ^ COLOR_MASK);
+        m_house.push(captured_piece ^ piece::mask::COLOR);
     }
     // move piece from source to destination
     m_board.make_move(source, destination);
 
-    m_is_whites_turn = ! m_is_whites_turn;
+    m_is_whites_turn = !m_is_whites_turn;
 }

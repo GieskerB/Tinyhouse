@@ -1,4 +1,5 @@
 #include "../inc/move.hpp"
+
 #include "../inc/board.hpp"
 
 #define INDEX_SHIFT(index, base) (index - base)
@@ -97,23 +98,23 @@ constexpr auto precomputed_king_moves = [] {
     return array;
 }();
 
-static uint16_t precomputed_bitmap(piece piece, uint8_t piece_index) {
-    switch (piece & PIECE_MASK) {
-        case WHITE | PAWN:
+static uint16_t precomputed_bitmap(piece_t piece, uint8_t piece_index) {
+    switch (piece & piece::mask::PIECE) {
+        case piece::white_pawn:
             return precomputed_white_pawn_moves[piece_index];
-        case BLACK | PAWN:
+        case piece::black_pawn:
             return precomputed_black_pawn_moves[piece_index];
-        case WHITE | FERZ:
-        case BLACK | FERZ:
+        case piece::white_ferz:
+        case piece::black_ferz:
             return precomputed_ferz_moves[piece_index];
-        case WHITE | HORS:
-        case BLACK | HORS:
+        case piece::white_hors:
+        case piece::black_hors:
             return precomputed_hors_moves[piece_index];
-        case WHITE | WAZIR:
-        case BLACK | WAZIR:
+        case piece::white_wazir:
+        case piece::black_wazir:
             return precomputed_wazir_moves[piece_index];
-        case WHITE | KING:
-        case BLACK | KING:
+        case piece::white_king:
+        case piece::black_king:
             return precomputed_king_moves[piece_index];
         default:
             return 0;
@@ -123,7 +124,7 @@ static uint16_t precomputed_bitmap(piece piece, uint8_t piece_index) {
 static uint16_t pseudo_legal_pawn_move_bitmap(const Board& board, uint8_t piece_index, uint16_t bitmap) {
     const uint16_t file_bitmap = 0b0001'0001'0001'0001 << Board::get_file(piece_index);
     const uint16_t move_bitmap = file_bitmap & ~board.get_bitmap() & bitmap;
-    const uint8_t other_color = (board.get_piece(piece_index) & COLOR_MASK) ^ COLOR_MASK;
+    const uint8_t other_color = (board.get_piece(piece_index) & piece::mask::COLOR) ^ piece::mask::COLOR;
     const uint16_t other_color_bitmap = board.get_bitmap(other_color);
     const uint16_t capture_bitmap = ((file_bitmap << 1) | (file_bitmap >> 1)) & other_color_bitmap & bitmap;
 
@@ -157,33 +158,35 @@ static uint16_t pseudo_legal_hors_move_bitmap(const Board& board, uint8_t piece_
 }
 
 uint16_t direct_check_check(const Board& board, uint8_t piece_index, uint16_t bitmap) {
-    const piece piece = board.get_piece(piece_index);
-    if ((piece & ID_MASK) == KING) return bitmap;
+    const piece_t piece = board.get_piece(piece_index);
+    if ((piece & piece::mask::ID) == piece::id::KING) return bitmap;
     // const uint8_t king_index = board.find_king(piece & COLOR_MASK);
     return bitmap;
 }
 
 uint16_t pseudo_legal_move_bitmap(const Board& board, uint8_t piece_index) {
     // Get all possible moves
-    const piece piece = board.get_piece(piece_index);
-    if (piece == const_piece::null_piece) return 0;
+    const piece_t piece = board.get_piece(piece_index);
+    if (piece == piece::null) return 0;
     uint16_t pseudo_legal_moves = precomputed_bitmap(piece, piece_index);
 
     // Filter out those that would be a self capture:
-    uint16_t own_pieces_bitmap = board.get_bitmap(piece & COLOR_MASK);
+    uint16_t own_pieces_bitmap = board.get_bitmap(piece & piece::mask::COLOR);
     pseudo_legal_moves &= ~own_pieces_bitmap;
 
     // Filter extra rules:
-    if ((piece & ID_MASK) == PAWN) return pseudo_legal_pawn_move_bitmap(board, piece_index, pseudo_legal_moves);
-    if ((piece & ID_MASK) == HORS) return pseudo_legal_hors_move_bitmap(board, piece_index, pseudo_legal_moves);
+    if ((piece & piece::mask::ID) == piece::id::PAWN)
+        return pseudo_legal_pawn_move_bitmap(board, piece_index, pseudo_legal_moves);
+    if ((piece & piece::mask::ID) == piece::id::HORS)
+        return pseudo_legal_hors_move_bitmap(board, piece_index, pseudo_legal_moves);
 
     return pseudo_legal_moves;
 }
 
-static move make_move(uint16_t destination, uint16_t source) { return (destination << 4) | source; }
+static move_t make_move(uint16_t destination, uint16_t source) { return (destination << 4) | source; }
 
-std::vector<move> legal_moves(const Board& board, uint8_t piece_index) {
-    std::vector<move> moves;
+std::vector<move_t> legal_moves(const Board& board, uint8_t piece_index) {
+    std::vector<move_t> moves;
     // board.get_piece(piece_index);
     const uint16_t move_bitmap = pseudo_legal_move_bitmap(board, piece_index);
 

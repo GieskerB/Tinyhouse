@@ -16,7 +16,7 @@ class Game {
     Game();
     Game(std::string tiny_fen);
 
-    void make_move(move);
+    void make_move(move_t);
 
     inline const Board& board() const { return m_board; }
     inline const House& house() const { return m_house; }

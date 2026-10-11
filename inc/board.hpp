@@ -11,26 +11,25 @@ class Board;
 #include "piece.hpp"
 
 class Board {
-    std::array<piece, 16> board{
-        const_piece::black_ferz, const_piece::black_hors,  const_piece::black_wazir, const_piece::black_king,  // rank 4
-        const_piece::null_piece, const_piece::null_piece,  const_piece::null_piece,  const_piece::black_pawn,  // rank 3
-        const_piece::white_pawn, const_piece::null_piece,  const_piece::null_piece,  const_piece::null_piece,  // rank 2
-        const_piece::white_king, const_piece::white_wazir, const_piece::white_hors,  const_piece::white_ferz   // rank 1
+    std::array<piece_t, 16> board{
+        piece::black_ferz, piece::black_hors,  piece::black_wazir, piece::black_king,  // rank 4
+        piece::null,       piece::null,        piece::null,        piece::black_pawn,  // rank 3
+        piece::white_pawn, piece::null,        piece::null,        piece::null,        // rank 2
+        piece::white_king, piece::white_wazir, piece::white_hors,  piece::white_ferz   // rank 1
     };
 
    public:
-
     static constexpr uint8_t SIZE = 4;
 
-    void overwrite(piece piece, uint8_t index);
+    void overwrite(piece_t piece, uint8_t index);
 
     void make_move(uint8_t from, uint8_t to);
 
-    piece get_piece(uint8_t index) const;
+    piece_t get_piece(uint8_t index) const;
 
     uint8_t find_king(uint8_t color) const;
 
-    uint16_t get_bitmap(piece piece, uint8_t color) const;
+    uint16_t get_bitmap(piece_t piece, uint8_t color) const;
     uint16_t get_bitmap(uint8_t color) const;
     uint16_t get_bitmap() const;
 

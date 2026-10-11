@@ -17,15 +17,15 @@ class House {
     std::array<uint8_t, HOUSE_SIZE> m_house{0};
 
    public:
-    void push(piece);
-    piece pop(uint8_t);
+    void push(piece_t);
+    piece_t pop(uint8_t);
 
     bool is_empty() const;
 
     uint8_t count(uint8_t) const;
 
-    static uint8_t piece_to_index(piece);
-    static piece index_to_piece(uint8_t);
+    static uint8_t piece_to_index(piece_t);
+    static piece_t index_to_piece(uint8_t);
 };
 
 #endif

@@ -13,7 +13,7 @@ class GameManager {
     GameManager();
     GameManager(std::string tiny_fen);
 
-    inline const Game& game() const {return m_game;}
+    inline const Game& game() const { return m_game; }
 
     void init();
     void loop();

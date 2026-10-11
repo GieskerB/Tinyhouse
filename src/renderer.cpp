@@ -3,8 +3,8 @@
 #include <SDL3/SDL.h>
 #include <SDL3/SDL_pixels.h>
 
-#include <iostream>
 #include <algorithm>
+#include <iostream>
 
 #include "../inc/piece.hpp"
 
@@ -32,7 +32,7 @@ constexpr SDL_Color LINE_COLOR{15, 10, 5, 255};
 
 static std::array<SDL_Texture*, 12> textures{nullptr};
 
-static std::array<Highlight, Board::SIZE * Board::SIZE> highlighted {Highlight::NONE};
+static std::array<Highlight, Board::SIZE * Board::SIZE> highlighted{Highlight::NONE};
 
 static inline void init_SDL() {
     if (!SDL_Init(SDL_INIT_VIDEO)) {
@@ -49,27 +49,27 @@ static inline void init_SDL() {
     }
 }
 
-static inline void create_texture(const char* path, const piece p) {
+static inline void create_texture(const char* path, const piece_t p) {
     SDL_Surface* surf = SDL_LoadPNG(path);
     textures[PIECE_INDEX(p)] = SDL_CreateTextureFromSurface(renderer, surf);
     SDL_DestroySurface(surf);
 }
 
 static void load_pieces() {
-    create_texture("assets/White_Ferz.png", const_piece::white_ferz);
-    create_texture("assets/White_Hors.png", const_piece::white_hors);
-    create_texture("assets/White_King.png", const_piece::white_king);
-    create_texture("assets/White_Pawn.png", const_piece::white_pawn);
-    create_texture("assets/White_Wazir.png", const_piece::white_wazir);
+    create_texture("assets/White_Ferz.png", piece::white_ferz);
+    create_texture("assets/White_Hors.png", piece::white_hors);
+    create_texture("assets/White_King.png", piece::white_king);
+    create_texture("assets/White_Pawn.png", piece::white_pawn);
+    create_texture("assets/White_Wazir.png", piece::white_wazir);
 
-    create_texture("assets/Black_Ferz.png", const_piece::black_ferz);
-    create_texture("assets/Black_Hors.png", const_piece::black_hors);
-    create_texture("assets/Black_King.png", const_piece::black_king);
-    create_texture("assets/Black_Pawn.png", const_piece::black_pawn);
-    create_texture("assets/Black_Wazir.png", const_piece::black_wazir);
+    create_texture("assets/Black_Ferz.png", piece::black_ferz);
+    create_texture("assets/Black_Hors.png", piece::black_hors);
+    create_texture("assets/Black_King.png", piece::black_king);
+    create_texture("assets/Black_Pawn.png", piece::black_pawn);
+    create_texture("assets/Black_Wazir.png", piece::black_wazir);
 
-    create_texture("assets/Dot.png",const_piece::overlay_dot);
-    create_texture("assets/Ring.png",const_piece::overlay_circle);
+    create_texture("assets/Dot.png", piece::overlay_dot);
+    create_texture("assets/Ring.png", piece::overlay_circle);
 }
 
 void init_renderer() {
@@ -78,18 +78,18 @@ void init_renderer() {
 }
 
 void clear_highlighted() {
-    for(uint8_t i = 0; i < highlighted.size(); ++i) {
+    for (uint8_t i = 0; i < highlighted.size(); ++i) {
         highlighted[i] = Highlight::NONE;
     }
 }
 
-void highlight_move(move move) {
+void highlight_move(move_t move) {
     const uint8_t source = move & 0b1111;
     const uint8_t destination = (move & 0b11110000) >> 4;
-    const bool capture = (move & CAPTURE_FLAG) != 0;
-    assert (source < highlighted.size());
+    const bool capture = (move & move::flag::CAPTURE) != 0;
+    assert(source < highlighted.size());
     highlighted[source] = Highlight::SELECT;
-    assert (destination < highlighted.size());
+    assert(destination < highlighted.size());
     highlighted[destination] = capture ? Highlight::CAPTURE : Highlight::MOVE;
 }
 
@@ -100,7 +100,7 @@ void render_board(const Board& board) {
             const auto& select_color = (file + rank) % 2 == 0 ? LIGHT_TILE_SELECTED_COLOR : DARK_TILE_SELECTED_COLOR;
             const auto& color = (file + rank) % 2 == 0 ? LIGHT_TILE_COLOR : DARK_TILE_COLOR;
 
-            const Highlight highlight = highlighted[Board::get_index(rank,file)];
+            const Highlight highlight = highlighted[Board::get_index(rank, file)];
             SET_COLOR(highlight == Highlight::SELECT ? select_color : color);
 
             const SDL_FRect tile{file * TILE_SIZE + HOUSE_SIZE, rank * TILE_SIZE, TILE_SIZE, TILE_SIZE};
@@ -111,8 +111,8 @@ void render_board(const Board& board) {
     // Render Pieces on top
     for (uint8_t rank = 0; rank < Board::SIZE; ++rank) {
         for (uint8_t file = 0; file < Board::SIZE; ++file) {
-            const piece p = board.get_piece(Board::get_index(rank, file));
-            if (p == const_piece::null_piece) continue;
+            const piece_t p = board.get_piece(Board::get_index(rank, file));
+            if (p == piece::null) continue;
             const SDL_FRect place{file * TILE_SIZE + HOUSE_SIZE, rank * TILE_SIZE, TILE_SIZE, TILE_SIZE};
             SDL_RenderTexture(renderer, textures[PIECE_INDEX(p)], NULL, &place);
         }
@@ -121,12 +121,12 @@ void render_board(const Board& board) {
     // Render overlay ontop of that!
     for (uint8_t rank = 0; rank < Board::SIZE; ++rank) {
         for (uint8_t file = 0; file < Board::SIZE; ++file) {
-            const Highlight highlight = highlighted[Board::get_index(rank,file)];
+            const Highlight highlight = highlighted[Board::get_index(rank, file)];
             if ((highlight == Highlight::NONE) or (highlight == Highlight::SELECT)) continue;
 
             const SDL_FRect place{file * TILE_SIZE + HOUSE_SIZE, rank * TILE_SIZE, TILE_SIZE, TILE_SIZE};
 
-            const piece dummy_piece = highlight == Highlight::MOVE ? const_piece::overlay_dot : const_piece::overlay_circle;
+            const piece_t dummy_piece = highlight == Highlight::MOVE ? piece::overlay_dot : piece::overlay_circle;
             SDL_RenderTexture(renderer, textures[PIECE_INDEX(dummy_piece)], NULL, &place);
         }
     }
@@ -152,7 +152,7 @@ void render_house(const House& house) {
     SDL_RenderFillRect(renderer, &house_rect);
 
     // Helper lambda
-    auto render = [](float x, float y, piece p) {
+    auto render = [](float x, float y, piece_t p) {
         const SDL_FRect place{x, y, TILE_SIZE / 2, TILE_SIZE / 2};
         SDL_RenderTexture(renderer, textures[PIECE_INDEX(p)], NULL, &place);
     };
@@ -168,7 +168,7 @@ void render_house(const House& house) {
         const uint8_t count = house.count(index);
         if (count == 0) continue;
         const float y = y_lookup[index];
-        const piece p = House::index_to_piece(index);
+        const piece_t p = House::index_to_piece(index);
         render(0, y, p);
         if (count == 2) render(HOUSE_SIZE / 4, y, p);
     }

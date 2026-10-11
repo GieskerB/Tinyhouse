@@ -15,35 +15,35 @@ TEST_CASE("TinyFen Test - Starter Fen") {
         REQUIRE(game.fullmove_counter() == 0);
 
         // Test if board is setup correctly
-        REQUIRE(game.board().get_piece(0) == const_piece::black_ferz);
-        REQUIRE(game.board().get_piece(1) == const_piece::black_hors);
-        REQUIRE(game.board().get_piece(2) == const_piece::black_wazir);
-        REQUIRE(game.board().get_piece(3) == const_piece::black_king);
+        REQUIRE(game.board().get_piece(0) == piece::black_ferz);
+        REQUIRE(game.board().get_piece(1) == piece::black_hors);
+        REQUIRE(game.board().get_piece(2) == piece::black_wazir);
+        REQUIRE(game.board().get_piece(3) == piece::black_king);
 
-        REQUIRE(game.board().get_piece(4) == const_piece::null_piece);
-        REQUIRE(game.board().get_piece(5) == const_piece::null_piece);
-        REQUIRE(game.board().get_piece(6) == const_piece::null_piece);
-        REQUIRE(game.board().get_piece(7) == const_piece::black_pawn);
+        REQUIRE(game.board().get_piece(4) == piece::null);
+        REQUIRE(game.board().get_piece(5) == piece::null);
+        REQUIRE(game.board().get_piece(6) == piece::null);
+        REQUIRE(game.board().get_piece(7) == piece::black_pawn);
 
-        REQUIRE(game.board().get_piece(8) == const_piece::white_pawn);
-        REQUIRE(game.board().get_piece(9) == const_piece::null_piece);
-        REQUIRE(game.board().get_piece(10) == const_piece::null_piece);
-        REQUIRE(game.board().get_piece(11) == const_piece::null_piece);
+        REQUIRE(game.board().get_piece(8) == piece::white_pawn);
+        REQUIRE(game.board().get_piece(9) == piece::null);
+        REQUIRE(game.board().get_piece(10) == piece::null);
+        REQUIRE(game.board().get_piece(11) == piece::null);
 
-        REQUIRE(game.board().get_piece(12) == const_piece::white_king);
-        REQUIRE(game.board().get_piece(13) == const_piece::white_wazir);
-        REQUIRE(game.board().get_piece(14) == const_piece::white_hors);
-        REQUIRE(game.board().get_piece(15) == const_piece::white_ferz);
+        REQUIRE(game.board().get_piece(12) == piece::white_king);
+        REQUIRE(game.board().get_piece(13) == piece::white_wazir);
+        REQUIRE(game.board().get_piece(14) == piece::white_hors);
+        REQUIRE(game.board().get_piece(15) == piece::white_ferz);
 
-        REQUIRE(game.house().count(House::piece_to_index(const_piece::black_ferz)) == 0);
-        REQUIRE(game.house().count(House::piece_to_index(const_piece::black_hors)) == 0);
-        REQUIRE(game.house().count(House::piece_to_index(const_piece::black_wazir)) == 0);
-        REQUIRE(game.house().count(House::piece_to_index(const_piece::black_pawn)) == 0);
+        REQUIRE(game.house().count(House::piece_to_index(piece::black_ferz)) == 0);
+        REQUIRE(game.house().count(House::piece_to_index(piece::black_hors)) == 0);
+        REQUIRE(game.house().count(House::piece_to_index(piece::black_wazir)) == 0);
+        REQUIRE(game.house().count(House::piece_to_index(piece::black_pawn)) == 0);
 
-        REQUIRE(game.house().count(House::piece_to_index(const_piece::white_pawn)) == 0);
-        REQUIRE(game.house().count(House::piece_to_index(const_piece::white_wazir)) == 0);
-        REQUIRE(game.house().count(House::piece_to_index(const_piece::white_hors)) == 0);
-        REQUIRE(game.house().count(House::piece_to_index(const_piece::white_ferz)) == 0);
+        REQUIRE(game.house().count(House::piece_to_index(piece::white_pawn)) == 0);
+        REQUIRE(game.house().count(House::piece_to_index(piece::white_wazir)) == 0);
+        REQUIRE(game.house().count(House::piece_to_index(piece::white_hors)) == 0);
+        REQUIRE(game.house().count(House::piece_to_index(piece::white_ferz)) == 0);
 
         // Test is house is setup correctly (empty)
         REQUIRE(game.house().is_empty());
@@ -134,9 +134,9 @@ TEST_CASE("TinyFen Test - Altered Starter Fen - Black Turn") {
 TEST_CASE("TinyFen Test - Board Test - Different piece positions 1") {
     try {
         Game game("fh1k/2pw/P3/KWHF\\- w - 0 0");
-        REQUIRE(game.board().get_piece(2) == const_piece::null_piece);
-        REQUIRE(game.board().get_piece(6) == const_piece::black_pawn);
-        REQUIRE(game.board().get_piece(7) == const_piece::black_wazir);
+        REQUIRE(game.board().get_piece(2) == piece::null);
+        REQUIRE(game.board().get_piece(6) == piece::black_pawn);
+        REQUIRE(game.board().get_piece(7) == piece::black_wazir);
     } catch (const std::invalid_argument& iae) {
         std::cerr << iae.what() << "\n";
         REQUIRE(false);
@@ -146,14 +146,14 @@ TEST_CASE("TinyFen Test - Board Test - Different piece positions 1") {
 TEST_CASE("TinyFen Test - Board Test - Different piece positions 2") {
     try {
         Game game("4/fFhH/wWkK/p1P1\\- w - 0 0");
-        REQUIRE(game.board().get_piece(0) == const_piece::null_piece);
-        REQUIRE(game.board().get_piece(3) == const_piece::null_piece);
-        REQUIRE(game.board().get_piece(4) == const_piece::black_ferz);
-        REQUIRE(game.board().get_piece(5) == const_piece::white_ferz);
-        REQUIRE(game.board().get_piece(12) == const_piece::black_pawn);
-        REQUIRE(game.board().get_piece(13) == const_piece::null_piece);
-        REQUIRE(game.board().get_piece(14) == const_piece::white_pawn);
-        REQUIRE(game.board().get_piece(15) == const_piece::null_piece);
+        REQUIRE(game.board().get_piece(0) == piece::null);
+        REQUIRE(game.board().get_piece(3) == piece::null);
+        REQUIRE(game.board().get_piece(4) == piece::black_ferz);
+        REQUIRE(game.board().get_piece(5) == piece::white_ferz);
+        REQUIRE(game.board().get_piece(12) == piece::black_pawn);
+        REQUIRE(game.board().get_piece(13) == piece::null);
+        REQUIRE(game.board().get_piece(14) == piece::white_pawn);
+        REQUIRE(game.board().get_piece(15) == piece::null);
     } catch (const std::invalid_argument& iae) {
         std::cerr << iae.what() << "\n";
         REQUIRE(false);
@@ -237,8 +237,8 @@ TEST_CASE("TinyFen Test - Board Test - Wrong King count 3") {
 TEST_CASE("TinyFen Test - House Test - Correct filling 1") {
     try {
         Game game("fhwk/3p/P3/KW1F\\H w - 0 0");
-        REQUIRE(game.house().count(House::piece_to_index(const_piece::white_hors)) == 1);
-        REQUIRE(game.house().count(House::piece_to_index(const_piece::black_hors)) == 0);
+        REQUIRE(game.house().count(House::piece_to_index(piece::white_hors)) == 1);
+        REQUIRE(game.house().count(House::piece_to_index(piece::black_hors)) == 0);
     } catch (const std::invalid_argument& iae) {
         std::cerr << iae.what() << "\n";
         REQUIRE(false);
@@ -248,8 +248,8 @@ TEST_CASE("TinyFen Test - House Test - Correct filling 1") {
 TEST_CASE("TinyFen Test - House Test - Correct filling 2") {
     try {
         Game game("fhwk/3p/P3/KW1F\\h w - 0 0");
-        REQUIRE(game.house().count(House::piece_to_index(const_piece::white_hors)) == 0);
-        REQUIRE(game.house().count(House::piece_to_index(const_piece::black_hors)) == 1);
+        REQUIRE(game.house().count(House::piece_to_index(piece::white_hors)) == 0);
+        REQUIRE(game.house().count(House::piece_to_index(piece::black_hors)) == 1);
     } catch (const std::invalid_argument& iae) {
         std::cerr << iae.what() << "\n";
         REQUIRE(false);
@@ -259,9 +259,9 @@ TEST_CASE("TinyFen Test - House Test - Correct filling 2") {
 TEST_CASE("TinyFen Test - House Test - Correct filling 3") {
     try {
         Game game("f2k/3p/P3/KW1F\\Hhw w - 0 0");
-        REQUIRE(game.house().count(House::piece_to_index(const_piece::white_hors)) == 1);
-        REQUIRE(game.house().count(House::piece_to_index(const_piece::black_hors)) == 1);
-        REQUIRE(game.house().count(House::piece_to_index(const_piece::black_wazir)) == 1);
+        REQUIRE(game.house().count(House::piece_to_index(piece::white_hors)) == 1);
+        REQUIRE(game.house().count(House::piece_to_index(piece::black_hors)) == 1);
+        REQUIRE(game.house().count(House::piece_to_index(piece::black_wazir)) == 1);
     } catch (const std::invalid_argument& iae) {
         std::cerr << iae.what() << "\n";
         REQUIRE(false);
@@ -271,9 +271,9 @@ TEST_CASE("TinyFen Test - House Test - Correct filling 3") {
 TEST_CASE("TinyFen Test - House Test - Correct filling 4") {
     try {
         Game game("1h1k/4/4/KWHF\\PFPW w - 0 0");
-        REQUIRE(game.house().count(House::piece_to_index(const_piece::white_pawn)) == 2);
-        REQUIRE(game.house().count(House::piece_to_index(const_piece::white_ferz)) == 1);
-        REQUIRE(game.house().count(House::piece_to_index(const_piece::white_wazir)) == 1);
+        REQUIRE(game.house().count(House::piece_to_index(piece::white_pawn)) == 2);
+        REQUIRE(game.house().count(House::piece_to_index(piece::white_ferz)) == 1);
+        REQUIRE(game.house().count(House::piece_to_index(piece::white_wazir)) == 1);
     } catch (const std::invalid_argument& iae) {
         std::cerr << iae.what() << "\n";
         REQUIRE(false);
@@ -283,15 +283,15 @@ TEST_CASE("TinyFen Test - House Test - Correct filling 4") {
 TEST_CASE("TinyFen Test - House Test - Correct filling 5") {
     try {
         Game game("1k1K/4/4/4\\fFhHwWpP w - 0 0");
-        REQUIRE(game.house().count(House::piece_to_index(const_piece::black_ferz)) == 1);
-        REQUIRE(game.house().count(House::piece_to_index(const_piece::black_hors)) == 1);
-        REQUIRE(game.house().count(House::piece_to_index(const_piece::black_wazir)) == 1);
-        REQUIRE(game.house().count(House::piece_to_index(const_piece::black_pawn)) == 1);
+        REQUIRE(game.house().count(House::piece_to_index(piece::black_ferz)) == 1);
+        REQUIRE(game.house().count(House::piece_to_index(piece::black_hors)) == 1);
+        REQUIRE(game.house().count(House::piece_to_index(piece::black_wazir)) == 1);
+        REQUIRE(game.house().count(House::piece_to_index(piece::black_pawn)) == 1);
 
-        REQUIRE(game.house().count(House::piece_to_index(const_piece::white_ferz)) == 1);
-        REQUIRE(game.house().count(House::piece_to_index(const_piece::white_hors)) == 1);
-        REQUIRE(game.house().count(House::piece_to_index(const_piece::white_wazir)) == 1);
-        REQUIRE(game.house().count(House::piece_to_index(const_piece::white_pawn)) == 1);
+        REQUIRE(game.house().count(House::piece_to_index(piece::white_ferz)) == 1);
+        REQUIRE(game.house().count(House::piece_to_index(piece::white_hors)) == 1);
+        REQUIRE(game.house().count(House::piece_to_index(piece::white_wazir)) == 1);
+        REQUIRE(game.house().count(House::piece_to_index(piece::white_pawn)) == 1);
     } catch (const std::invalid_argument& iae) {
         std::cerr << iae.what() << "\n";
         REQUIRE(false);
@@ -301,15 +301,15 @@ TEST_CASE("TinyFen Test - House Test - Correct filling 5") {
 TEST_CASE("TinyFen Test - House Test - Correct filling 6") {
     try {
         Game game("1k1K/4/4/4\\FFHHWWPP w - 0 0");
-        REQUIRE(game.house().count(House::piece_to_index(const_piece::black_ferz)) == 0);
-        REQUIRE(game.house().count(House::piece_to_index(const_piece::black_hors)) == 0);
-        REQUIRE(game.house().count(House::piece_to_index(const_piece::black_wazir)) == 0);
-        REQUIRE(game.house().count(House::piece_to_index(const_piece::black_pawn)) == 0);
+        REQUIRE(game.house().count(House::piece_to_index(piece::black_ferz)) == 0);
+        REQUIRE(game.house().count(House::piece_to_index(piece::black_hors)) == 0);
+        REQUIRE(game.house().count(House::piece_to_index(piece::black_wazir)) == 0);
+        REQUIRE(game.house().count(House::piece_to_index(piece::black_pawn)) == 0);
 
-        REQUIRE(game.house().count(House::piece_to_index(const_piece::white_ferz)) == 2);
-        REQUIRE(game.house().count(House::piece_to_index(const_piece::white_hors)) == 2);
-        REQUIRE(game.house().count(House::piece_to_index(const_piece::white_wazir)) == 2);
-        REQUIRE(game.house().count(House::piece_to_index(const_piece::white_pawn)) == 2);
+        REQUIRE(game.house().count(House::piece_to_index(piece::white_ferz)) == 2);
+        REQUIRE(game.house().count(House::piece_to_index(piece::white_hors)) == 2);
+        REQUIRE(game.house().count(House::piece_to_index(piece::white_wazir)) == 2);
+        REQUIRE(game.house().count(House::piece_to_index(piece::white_pawn)) == 2);
     } catch (const std::invalid_argument& iae) {
         std::cerr << iae.what() << "\n";
         REQUIRE(false);
@@ -357,7 +357,7 @@ TEST_CASE("TinyFen Test - House Test - Wrong filling 4") {
 TEST_CASE("TinyFen Test - Promotion Test - Correct Promotion 1 ") {
     try {
         Game game("fhwk/3f/P3/KWHF\\- w a4 0 0");
-        REQUIRE((game.board().get_piece(Board::get_index(0, 0)) & PROMOTED) != 0);
+        REQUIRE((game.board().get_piece(Board::get_index(0, 0)) & piece::flag::PROMOTED) != 0);
     } catch (const std::invalid_argument& iae) {
         std::cerr << iae.what() << "\n";
         REQUIRE(false);
@@ -367,8 +367,8 @@ TEST_CASE("TinyFen Test - Promotion Test - Correct Promotion 1 ") {
 TEST_CASE("TinyFen Test - Promotion Test - Correct Promotion 2 ") {
     try {
         Game game("fhwk/3w/F3/KWHF\\- w d3 a2 0 0");
-        REQUIRE((game.board().get_piece(Board::get_index(1, 3)) & PROMOTED) != 0);
-        REQUIRE((game.board().get_piece(Board::get_index(2, 0)) & PROMOTED) != 0);
+        REQUIRE((game.board().get_piece(Board::get_index(1, 3)) & piece::flag::PROMOTED) != 0);
+        REQUIRE((game.board().get_piece(Board::get_index(2, 0)) & piece::flag::PROMOTED) != 0);
     } catch (const std::invalid_argument& iae) {
         std::cerr << iae.what() << "\n";
         REQUIRE(false);
