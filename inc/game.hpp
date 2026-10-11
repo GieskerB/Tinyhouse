@@ -1,6 +1,12 @@
 #ifndef GAME_HPP
 #define GAME_HPP
 
+// #include "move.hpp"
+
+#include <cstdint>
+
+typedef uint32_t move_t;
+
 #include "board.hpp"
 #include "house.hpp"
 

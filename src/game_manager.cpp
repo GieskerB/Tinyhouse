@@ -1,10 +1,9 @@
-#include "../inc/game_manager.hpp"
-
 #include <SDL3/SDL.h>
-
 #include <iostream>
 
+#include "../inc/game_manager.hpp"
 #include "../inc/renderer.hpp"
+#include "../inc/move.hpp"
 
 GameManager::GameManager() : m_game(), m_selected_index(-1) {};
 GameManager::GameManager(std::string tiny_fen) : m_game(tiny_fen), m_selected_index(-1) {};
@@ -47,6 +46,20 @@ void GameManager::handle_board_click(uint8_t rank, uint8_t file) {
     m_selected_index = current_index;
 }
 
+void GameManager::handle_house_click(uint8_t house_index) {
+    const piece_t house_piece = m_game.house().index_to_piece(house_index);
+    const uint8_t count = m_game.house().count(house_piece);
+    if (count == 0) return;
+    m_selected_index = -1;
+    clear_highlighted();
+    const auto possible_moves = legal_moves(m_game.board(), m_game.house(), house_index);
+    for (const auto& move : possible_moves) {
+        highlight_move(move);
+    }
+
+
+}
+
 void GameManager::loop() {
     bool running = true;
 
@@ -62,8 +75,9 @@ void GameManager::loop() {
             if (event.type == SDL_EVENT_MOUSE_BUTTON_DOWN) {
                 const float mouse_x = event.button.x;
                 const float mouse_y = event.button.y;
-                if (mouse_x < HOUSE_SIZE) {
-                    // const int8_t house_index = static_cast<int>(mouse_y / HEIGHT * House::HOUSE_SIZE);
+                if (mouse_x < House::SIZE) {
+                    const int8_t house_index = static_cast<int>(mouse_y / HEIGHT * House::SIZE);
+                    handle_house_click (house_index);
 
                 } else {
                     const int8_t rank = static_cast<int8_t>(mouse_y / HEIGHT * Board::SIZE);

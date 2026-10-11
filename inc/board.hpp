@@ -7,11 +7,14 @@
 
 class Board;
 
-#include "move.hpp"
 #include "piece.hpp"
 
 class Board {
-    std::array<piece_t, 16> board{
+   public:
+    static constexpr uint8_t SIZE = 4;
+
+   private:
+    std::array<piece_t, SIZE * SIZE> board{
         piece::black_ferz, piece::black_hors,  piece::black_wazir, piece::black_king,  // rank 4
         piece::null,       piece::null,        piece::null,        piece::black_pawn,  // rank 3
         piece::white_pawn, piece::null,        piece::null,        piece::null,        // rank 2
@@ -19,8 +22,6 @@ class Board {
     };
 
    public:
-    static constexpr uint8_t SIZE = 4;
-
     void overwrite(piece_t piece, uint8_t index);
 
     void make_move(uint8_t from, uint8_t to);

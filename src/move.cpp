@@ -1,7 +1,5 @@
 #include "../inc/move.hpp"
 
-#include "../inc/board.hpp"
-
 #define INDEX_SHIFT(index, base) (index - base)
 #define SHIFT(bitmap, index, base) \
     (INDEX_SHIFT(index, base) < 0) ? bitmap >> -INDEX_SHIFT(index, base) : bitmap << INDEX_SHIFT(index, base)
@@ -183,17 +181,46 @@ uint16_t pseudo_legal_move_bitmap(const Board& board, uint8_t piece_index) {
     return pseudo_legal_moves;
 }
 
-static move_t make_move(uint16_t destination, uint16_t source) { return (destination << 4) | source; }
+static move_t make_move(uint8_t destination, uint8_t source, move_t flags, piece_t captured, piece_t promoted = 0) {
+    return (promoted << 18) | (captured << 12) | flags | (destination << 4) | source;
+}
 
 std::vector<move_t> legal_moves(const Board& board, uint8_t piece_index) {
     std::vector<move_t> moves;
-    // board.get_piece(piece_index);
     const uint16_t move_bitmap = pseudo_legal_move_bitmap(board, piece_index);
 
     uint16_t current_bitmap = 0b1;
+
     for (uint8_t i = 0; i < 16; ++i) {
+        move_t flags = 0;
+        piece_t captured_piece = piece::null;
         if ((current_bitmap & move_bitmap) != 0) {
-            moves.push_back(make_move(i, piece_index));
+            const auto current_piece = board.get_piece(i);
+            if (current_piece != piece::null) {
+                flags |= move::flag::CAPTURE;
+                captured_piece = current_piece;
+            }
+            moves.push_back(make_move(i, piece_index, flags, captured_piece));
+        }
+        current_bitmap <<= 1;
+    }
+
+    return moves;
+}
+
+std::vector<move_t> legal_moves(const Board& board, const House& house, uint8_t house_index) {
+    std::vector<move_t> moves;
+
+    const piece_t color = house.index_to_piece(house_index) & piece::mask::COLOR;
+
+    const uint16_t move_bitmap = board.get_bitmap(color);
+
+    uint16_t current_bitmap = 0b1;
+
+    for (uint8_t i = 0; i < 16; ++i) {
+        move_t flags = move::flag::FROM_HOUSE;
+        if ((current_bitmap & move_bitmap) != 0) {
+            moves.push_back(make_move(i, house_index, flags, 0));
         }
         current_bitmap <<= 1;
     }

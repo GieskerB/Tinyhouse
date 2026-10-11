@@ -32,7 +32,8 @@ constexpr SDL_Color LINE_COLOR{15, 10, 5, 255};
 
 static std::array<SDL_Texture*, 12> textures{nullptr};
 
-static std::array<Highlight, Board::SIZE * Board::SIZE> highlighted{Highlight::NONE};
+static std::array<Highlight, Board::SIZE * Board::SIZE> board_highlight{Highlight::NONE};
+static std::array<Highlight, House::SIZE> house_highlight{Highlight::NONE};
 
 static inline void init_SDL() {
     if (!SDL_Init(SDL_INIT_VIDEO)) {
@@ -78,19 +79,29 @@ void init_renderer() {
 }
 
 void clear_highlighted() {
-    for (uint8_t i = 0; i < highlighted.size(); ++i) {
-        highlighted[i] = Highlight::NONE;
+    for (uint8_t i = 0; i < board_highlight.size(); ++i) {
+        board_highlight[i] = Highlight::NONE;
+    }
+    for (uint8_t i = 0; i < house_highlight.size(); ++i) {
+        house_highlight[i] = Highlight::NONE;
     }
 }
 
 void highlight_move(move_t move) {
     const uint8_t source = move & 0b1111;
     const uint8_t destination = (move & 0b11110000) >> 4;
+    if(move & move::flag::FROM_HOUSE) {
+        assert(source < house_highlight.size());
+        house_highlight[source] = Highlight::SELECT;
+        assert(destination < board_highlight.size());
+        board_highlight[destination] = Highlight::MOVE;
+        return;
+    }
     const bool capture = (move & move::flag::CAPTURE) != 0;
-    assert(source < highlighted.size());
-    highlighted[source] = Highlight::SELECT;
-    assert(destination < highlighted.size());
-    highlighted[destination] = capture ? Highlight::CAPTURE : Highlight::MOVE;
+    assert(source < board_highlight.size());
+    board_highlight[source] = Highlight::SELECT;
+    assert(destination < board_highlight.size());
+    board_highlight[destination] = capture ? Highlight::CAPTURE : Highlight::MOVE;
 }
 
 void render_board(const Board& board) {
@@ -100,7 +111,7 @@ void render_board(const Board& board) {
             const auto& select_color = (file + rank) % 2 == 0 ? LIGHT_TILE_SELECTED_COLOR : DARK_TILE_SELECTED_COLOR;
             const auto& color = (file + rank) % 2 == 0 ? LIGHT_TILE_COLOR : DARK_TILE_COLOR;
 
-            const Highlight highlight = highlighted[Board::get_index(rank, file)];
+            const Highlight highlight = board_highlight[Board::get_index(rank, file)];
             SET_COLOR(highlight == Highlight::SELECT ? select_color : color);
 
             const SDL_FRect tile{file * TILE_SIZE + HOUSE_SIZE, rank * TILE_SIZE, TILE_SIZE, TILE_SIZE};
@@ -121,7 +132,7 @@ void render_board(const Board& board) {
     // Render overlay ontop of that!
     for (uint8_t rank = 0; rank < Board::SIZE; ++rank) {
         for (uint8_t file = 0; file < Board::SIZE; ++file) {
-            const Highlight highlight = highlighted[Board::get_index(rank, file)];
+            const Highlight highlight = board_highlight[Board::get_index(rank, file)];
             if ((highlight == Highlight::NONE) or (highlight == Highlight::SELECT)) continue;
 
             const SDL_FRect place{file * TILE_SIZE + HOUSE_SIZE, rank * TILE_SIZE, TILE_SIZE, TILE_SIZE};
@@ -158,17 +169,17 @@ void render_house(const House& house) {
     };
 
     // Render either 0 / 1 / 2 pieces in house
-    for (uint8_t index = 0; index < House::HOUSE_SIZE; ++index) {
-        // if (house.is_highlighted(index)) {
-        //     SET_COLOR(HOUSE_SELECTED_COLOR);
-        //     const SDL_FRect select_rect{0, TILE_SIZE / 2 * index, HOUSE_SIZE, TILE_SIZE / 2};
-        //     SDL_RenderFillRect(renderer, &select_rect);
-        // }
+    for (uint8_t i = 0; i < House::SIZE; ++i) {
+        if (house_highlight[i] == Highlight::SELECT) {
+            SET_COLOR(HOUSE_SELECTED_COLOR);
+            const SDL_FRect select_rect{0, TILE_SIZE / 2 * i, HOUSE_SIZE, TILE_SIZE / 2};
+            SDL_RenderFillRect(renderer, &select_rect);
+        }
 
-        const uint8_t count = house.count(index);
+        const uint8_t count = house.count(i);
         if (count == 0) continue;
-        const float y = y_lookup[index];
-        const piece_t p = House::index_to_piece(index);
+        const float y = y_lookup[i];
+        const piece_t p = House::index_to_piece(i);
         render(0, y, p);
         if (count == 2) render(HOUSE_SIZE / 4, y, p);
     }

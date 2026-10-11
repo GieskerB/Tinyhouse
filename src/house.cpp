@@ -9,7 +9,7 @@ void House::push(piece_t p) {
 }
 
 piece_t House::pop(uint8_t index) {
-    assert(index < HOUSE_SIZE);
+    assert(index < SIZE);
     assert(m_house[index] == 1 or m_house[index] == 2);
     --m_house[index];
     return index_to_piece(index);
@@ -23,7 +23,7 @@ bool House::is_empty() const {
 }
 
 uint8_t House::count(uint8_t index) const {
-    assert(index < HOUSE_SIZE);
+    assert(index < SIZE);
     return m_house[index];
 }
 
@@ -36,9 +36,11 @@ uint8_t House::piece_to_index(piece_t p) {
         return index;
 }
 piece_t House::index_to_piece(uint8_t index) {
-    assert(index < HOUSE_SIZE);
+    assert(index < SIZE);
+    // custom bitmap here to exclude the king!
+    piece_t id = index & 0b11;
     if (index > 3)
-        return static_cast<piece_t>(index + 1 + 3);  // Fill in the king gap and (5,6,7)
+        return id | piece::color::BLACK;
     else
-        return static_cast<piece_t>(index);
+        return id | piece::color::WHITE;
 }

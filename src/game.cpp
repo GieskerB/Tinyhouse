@@ -4,6 +4,11 @@
 #include <sstream>
 #include <stdexcept>
 
+#include "../inc/move.hpp"
+
+#include "../inc/board.hpp"
+#include "../inc/house.hpp"
+
 static const std::string STARTER_FEN = "fhwk/3p/P3/KWHF\\- w - 0 0";
 
 static void throw_general_error(std::string msg) {

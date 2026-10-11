@@ -1,4 +1,5 @@
 #include "../inc/board.hpp"
+#include "../inc/house.hpp"
 
 void Board::overwrite(piece_t piece, uint8_t index) {
     assert(index < Board::SIZE * Board::SIZE);

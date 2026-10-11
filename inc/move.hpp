@@ -5,6 +5,7 @@
 #include <vector>
 
 #include "board.hpp"
+#include "house.hpp"
 
 typedef uint32_t move_t;
 // Bitmap {
@@ -37,5 +38,6 @@ constexpr move_t PROMOTPED_PIECE = 0b1111'1100'0000'0000'0000'0000;
 
 uint16_t pseudo_legal_move_bitmap(const Board& board, uint8_t piece_index);
 std::vector<move_t> legal_moves(const Board& board, uint8_t piece_index);
+std::vector<move_t> legal_moves(const Board& board, const House& house, uint8_t house_index)
 
 #endif

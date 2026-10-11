@@ -10,11 +10,11 @@ class House;
 
 class House {
    public:
-    static constexpr uint8_t HOUSE_SIZE = 8;
+    static constexpr uint8_t SIZE = 4;
 
    private:
     // house cant hold the king, so only 8 instead of 10 places.
-    std::array<uint8_t, HOUSE_SIZE> m_house{0};
+    std::array<uint8_t, House::SIZE> m_house{0};
 
    public:
     void push(piece_t);
